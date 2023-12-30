@@ -1,5 +1,5 @@
 import React,{useState} from 'react';
-import { apiUrl } from '../GlobalFile';
+import { apiUrl,SuperAdminRoleId } from '../GlobalFile';
 import { Link, useNavigate } from 'react-router-dom';
 
 
@@ -45,7 +45,6 @@ function showPassword(){
             debugger
             console.log('data',response);
             if(response.id == undefined){
-                debugger
                 //showAlert("alert-warning alert-dismissible","Incorrect Password");
                 return false;
             }
@@ -53,7 +52,7 @@ function showPassword(){
             sessionStorage.setItem('UserId',response.id);
             sessionStorage.setItem('Token',response.token);
             sessionStorage.setItem('Name',response.name);
-            if(response.roleId == "1"){
+            if(response.roleId == SuperAdminRoleId){
                 navigate("/companies");
             }else{
                 navigate("/projects");
@@ -96,7 +95,7 @@ function showPassword(){
                                         </form>
                                     </div>
                                     <div className="card-footer text-center py-3">
-                                        <div className="small"><Link to="/createAccount">Need an account? Sign up!</Link></div>
+                                        <div className="small"><Link to="createAccount">Need an account? Sign up!</Link></div>
                                     </div>
                                 </div>
                             </div>

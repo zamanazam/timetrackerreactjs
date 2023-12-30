@@ -9,17 +9,12 @@ import ProjectDetails from './Pages/ProjectDetails';
 import ProjectTimeLogs from './Pages/TimeLogs';
 import CreateAccount from './Pages/CreateAccount';
 import NotAuthorized from './Pages/NotAuthorized';
-import LayoutPage from './Layout/LayouPage';
+import LayoutPage from './Layout/LayoutPage';
+import Alert from './Components/Alert';
+import LogInLayout from './Layout/LogInLayout';
 function App() {
   const PrivateRoute = ({ element, ...props }) => {
     const token = sessionStorage.getItem('Token');
-    document.body.classList.remove('sb-sidenav-toggled');
-    localStorage.setItem('sb|sidebar-toggle', document.body.classList.contains('sb-sidenav-toggled'));
-    var navbar = document.getElementById('NavBar');
-    if (navbar != null) {
-      navbar.style.display = 'flex';
-    }
-
     const isLoggedIn = !!token;
     return isLoggedIn ? (
       React.cloneElement(element, props)
@@ -28,22 +23,33 @@ function App() {
     );
   };
 
+  const [alert, setAlert] = useState(null);
 
+    const showAlert = (alertType,message)=>{
+        setAlert({
+            type:alertType,
+            msg:message
+        })
+
+    }
 
   return (
     <Router>
       <>
+        {alert && <Alert type={alert.type} message={alert.msg} />}
         <Routes>
-          <Route exact path="/logIn" element={<LogIn />} />
-          <Route exact path="/createAccount" element={<CreateAccount />} />
-          <Route path='/' element={<LayoutPage />}>
-            <Route exact path="/companies" element={<PrivateRoute element={<Companies />} />} />
-            <Route exact path="/notAuthorized" element={<PrivateRoute element={<NotAuthorized />} />} />
-            <Route exact path="/Detail/:companyId" element={<PrivateRoute element={<CompanyDetail />} />} />
-            <Route exact path="/users" element={<PrivateRoute element={<Users />} />} />
-            <Route exact path="/projects" element={<PrivateRoute element={<Projects />} />} />
-            <Route exact path="/ProjectDetails/:id" element={<PrivateRoute element={<ProjectDetails />} />} />
-            <Route exact path="/ProjectTimeLogs/:projectId/:AssigneeId" element={<PrivateRoute element={<ProjectTimeLogs />} />} />
+        <Route path="/logIn/*" element={<LogInLayout />}>
+          <Route index element={<LogIn />} />
+          <Route path="createAccount" element={<CreateAccount />} />
+        </Route>
+          <Route path='/' element={<LayoutPage showAlert={showAlert}/>}>
+            <Route exact path="/companies" element={<PrivateRoute element={<Companies showAlert={showAlert}/>} />} />
+            <Route exact path="/notAuthorized" element={<PrivateRoute element={<NotAuthorized showAlert={showAlert}/>} />} />
+            <Route exact path="/Detail/:companyId" element={<PrivateRoute element={<CompanyDetail showAlert={showAlert}/>} />} />
+            <Route exact path="/users" element={<PrivateRoute element={<Users showAlert={showAlert}/>} />} />
+            <Route exact path="/projects" element={<PrivateRoute element={<Projects showAlert={showAlert}/>} />} />
+            <Route exact path="/ProjectDetails/:id" element={<PrivateRoute element={<ProjectDetails showAlert={showAlert}/>} />} />
+            <Route exact path="/ProjectTimeLogs/:projectId/:AssigneeId" element={<PrivateRoute element={<ProjectTimeLogs showAlert={showAlert}/>} />} />
           </Route>
         </Routes>
       </>

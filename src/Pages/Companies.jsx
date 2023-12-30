@@ -2,55 +2,59 @@ import React,{useEffect,useState}from "react";
 import { SuperAdminRoleId, apiUrl } from '../GlobalFile';
 import { useNavigate } from 'react-router-dom';
 
-const Companies =()=>{
-    debugger
+const Companies =({ showAlert })=>{
     const [AllCompanies, setCompaniesData] = useState(null);
     const navigate = useNavigate();
     const currentRoleId = sessionStorage.getItem('RoleId');
-
-        const GetAllCompanies = async (Page = 1) => {
-                debugger
-            const token = sessionStorage.getItem('Token');
-            const newUrl = apiUrl + '/Company/GetAllComapnies';
-            if (Page == null) Page = 1;
-        
-            const PageSize = 10;
-        
-            const url = new URL(newUrl);
-            url.searchParams.append('Page', Page);
-            url.searchParams.append('PageSize', PageSize);
-        
-            const headers = new Headers();
-            headers.append('Authorization', 'Bearer ' + token);
-            headers.append('Content-Type', 'application/json');
-        
-            const options = {
-                method: 'GET',
-                headers: headers,
-            };
-        
-            fetch(url, options)
-                .then((response) => response.json())
-                .then((data) => {
-                    console.log('data',data.results);
-                        setCompaniesData(data.results);
-                })
-                .catch((error) => {
-                console.error('Error:', error);
-                });
-            };
-       
         const CompanyDetail =(id)=>{
-              navigate('/Detail/'+id);
+            debugger
+            showAlert('danger', 'Invalid Company ID');
+            //    navigate('/Detail/'+id);
         };
 
         useEffect(() => {
-            GetAllCompanies();
-        },[]);
+            const controller = new AbortController();
+            const signal = controller.signal;
+            const GetAllCompanies = async (Page = 1) => {
+                const token = sessionStorage.getItem('Token');
+                const newUrl = apiUrl + '/Company/GetAllComapnies';
+                if (Page == null) Page = 1;
+    
+                const PageSize = 10;
+    
+                const url = new URL(newUrl);
+                url.searchParams.append('Page', Page);
+                url.searchParams.append('PageSize', PageSize);
+    
+                const headers = new Headers();
+                headers.append('Authorization', 'Bearer ' + token);
+                headers.append('Content-Type', 'application/json');
+    
+                const options = {
+                    method: 'GET',
+                    headers: headers,
+                };
+    
+                try {
+                    const response = await fetch(url, options,{signal});
+                    const data = await response.json();
+                    console.log('data', data.results);
+                    setCompaniesData(data.results);
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            };
 
+            GetAllCompanies();
+            
+            return () => {
+                controller.abort();
+            };
+        },[]);
+        
     return (
         <>
-        <div className="container-fluid px-4">
+         <div className="container-fluid px-4">
                 <h1 className="mt-4">Companies</h1>
             <div className="row mb-4">
                 <div>
@@ -84,8 +88,54 @@ const Companies =()=>{
                 ):
                 ('No Data Found')}
             </div>
-        </div>
+        </div> 
         </>
     )
 }
 export default Companies;
+
+
+
+// const [AllCompanies, setCompaniesData] = useState(null);
+// const navigate = useNavigate();
+// const currentRoleId = sessionStorage.getItem('RoleId');
+
+    // const GetAllCompanies = async (Page = 1) => {
+    //         debugger
+    //     const token = sessionStorage.getItem('Token');
+    //     const newUrl = apiUrl + '/Company/GetAllComapnies';
+    //     if (Page == null) Page = 1;
+    
+    //     const PageSize = 10;
+    
+    //     const url = new URL(newUrl);
+    //     url.searchParams.append('Page', Page);
+    //     url.searchParams.append('PageSize', PageSize);
+    
+    //     const headers = new Headers();
+    //     headers.append('Authorization', 'Bearer ' + token);
+    //     headers.append('Content-Type', 'application/json');
+    
+    //     const options = {
+    //         method: 'GET',
+    //         headers: headers,
+    //     };
+    
+    //     fetch(url, options)
+    //         .then((response) => response.json())
+    //         .then((data) => {
+    //             console.log('data',data.results);
+    //                 setCompaniesData(data.results);
+    //         })
+    //         .catch((error) => {
+    //         console.error('Error:', error);
+    //         });
+    //     };
+   
+    // const CompanyDetail =(id)=>{
+    //       navigate('/Detail/'+id);
+    // };
+
+    // useEffect(() => {
+    //     GetAllCompanies();
+    // },[]);
