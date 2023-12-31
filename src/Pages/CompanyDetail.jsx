@@ -3,23 +3,26 @@ import { apiUrl } from '../GlobalFile';
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 import CustomButton from "../Components/CustomButton";
-function CompanyDetail(){
+function CompanyDetail({showAlert,openPopup}){
     const [CompanyData ,setCompanyData] = useState(null);
+    const [companyName, setCompanyName] = useState('');
+    const [companyEmail, setCompanyEmail] = useState('');
+    const [companyStatus, setCompanyStatus] = useState('');
+    
+    const [isEmailValid, setEmailValid] = useState(true);
+    const [isNameValid, setNameValid] = useState(true);
+
     const { companyId } = useParams();
     const navigate = useNavigate();
-
+    const token = sessionStorage.getItem('Token');
     useEffect(()=>{
-        if (CompanyData === null) {
             GetCompanyDetailsbyId();
-        }
-    },[CompanyData]);
+    },[]);
 
     const CheckTimeLogbyAdmin = (id)=>{
         navigate('/ProjectTimeLogs/'+id+'/'+undefined);
     }
-    const SelectedName = (id)=>{
-        navigate('/ProjectDetails/'+id);
-    }
+    
     const GetCompanyDetailsbyId = ()=>{
             const headers = new Headers();
             const token = sessionStorage.getItem('Token');
@@ -46,13 +49,104 @@ function CompanyDetail(){
             });    
     }
 
+    const saveProject = (firstInputValue, secondInputValue) =>{
+        let AddProjectDTO = {
+            Name : firstInputValue,
+            Description : secondInputValue,
+            CompanyId :companyId
+        }
+        let url = apiUrl+'/Project/AddNewProjects';
+            fetch(url,{
+                method: 'POST',
+                headers: {
+                        'Authorization': 'Bearer '+token,
+                        'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(AddProjectDTO),
+            }).then((response) => response.json())
+                .then(response => {
+                    if(response.statusCode == 200){
+                        showAlert('Success',response.message);
+                        GetCompanyDetailsbyId();
+                    }else{
+                        showAlert('Error',response.message);
+                    }
+                    console.log(response)
+                })
+                .catch(error =>{
+                    debugger
+                    console.log(error)
+                })
+         
+    }
+
       const UpdateCompany = () => {
-        debugger;
-        // const companyName = CompanyData.name; 
-        // const companyEmail = CompanyData.email; 
-        // const companyStatus = CompanyData.isActive;
+        debugger
+        if(companyName.trim() === ""){
+            setNameValid(false);
+            return false;
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isValid = emailRegex.test(companyEmail);
+        if(!isValid){
+            setEmailValid(false);
+            return false;
+        }
+        let status = true;
+        if(companyStatus == "false"){
+            status = false
+        }
+
+        let UpdateCompanyDTO = {
+            name: companyName,
+            email: companyEmail,
+            isActive: status,
+            id: companyId
+        }
+
+
+         let url = apiUrl+'/Company/UpdateCompanybyId';
+         fetch(url,{
+             method: 'POST',
+             headers: {
+                     'Authorization': 'Bearer '+token,
+                     'Content-Type': 'application/json',
+             },
+             body: JSON.stringify(UpdateCompanyDTO),
+         }).then((response) => response.json())
+             .then(response => {
+                 if(response.statusCode == 200){
+                     showAlert('Success',response.message);
+                     GetCompanyDetailsbyId();
+                 }else{
+                     showAlert('Error',response.message);
+                 }
+                 console.log(response)
+             })
+             .catch(error =>{
+                 debugger
+                 console.log(error)
+             })   
       
       };
+
+      
+    const handleCompanyName = (e) => {
+        debugger
+        setCompanyName(e.target.value)
+        setNameValid(true);
+    };
+
+    const handleCompanyEmail = (e) =>{
+        setCompanyEmail(e.target.value);
+        setEmailValid(true);
+    }
+
+    const handleCompanyStatus = (e)=>{
+        debugger
+        const newValue = e.target.value === "true";
+        setCompanyStatus(newValue); 
+    }
 
       const ProjectDetails = (projectId)=>{
         debugger
@@ -61,40 +155,54 @@ function CompanyDetail(){
 
     return (
         <div className="container">
-            <div className="row mt-4 mb-4">
-                <h4 className="text-danger">Company Details</h4>
-            </div>
+                <h1 className="mt-4">Company Details</h1>
             <div className="row mb-2">
                 <div className="col-lg-4 col-md-6 col-sm-12">
                     <label>Company Name</label>
-                    <input type="text" className="form-control" defaultValue={CompanyData?.name} />
+                    <input type="text" className="form-control" onChange={handleCompanyName} defaultValue={CompanyData?.name} />
+                        {!isNameValid && (
+                            <p className='text-danger mt-1'>Enter name first</p>
+                        )}
                 </div>
                 <div className="col-lg-4 col-md-6 col-sm-12">
                     <label>Company Email</label>
-                    <input type="text" className="form-control" defaultValue={CompanyData?.email} />
+                    <input type="text" className="form-control" onChange={handleCompanyEmail} defaultValue={CompanyData?.email} />
+                        {!isEmailValid && (
+                            <p className='text-danger mt-1'>Enter valid email</p>
+                        )}
                 </div>
                 <div className="col-lg-4 col-md-6 col-sm-12">
                     <label>Status</label>
-                        <select className="form-select" defaultValue={CompanyData?.isActive} >
-                            <option value="true" >Active</option>
-                            <option value="false" >Block</option>
-                        </select>    
+                    <select className="form-select" onChange={handleCompanyStatus} value={CompanyData?.isActive ? "true" :"false"}>
+                        <option value="true">Active</option>
+                        <option value="false">Block</option>
+                    </select>
                 </div> 
             </div>
             <div className="row mb-4">
                 <div>
-                    <CustomButton className="btn btn-success mt-4 float-end" label="Update" onClick={()=>UpdateCompany()} ></CustomButton>
-                    <CustomButton className="btn btn-warning mt-4 float-end me-2" label="Project" onClick={()=>UpdateCompany()} ></CustomButton>
+                    <button className="btn btn-success mt-4 float-end" onClick={()=>UpdateCompany()}><span className="me-2"><i className="fas fa-redo"></i></span>Update</button>
+                    <button className="btn btn-warning mt-4 float-end me-2" onClick={() => openPopup({ 
+                                                                                    show:true,
+                                                                                    title: "Create Project", 
+                                                                                    firstInputTitle: 'Name',
+                                                                                    secondInputTitle:'Description',
+                                                                                    buttontitle:'Save',
+                                                                                    onClick: saveProject })}>
+                        <span className="me-2">
+                            <i className="fa fa-plus"></i>
+                        </span>Project
+                    </button>
                 </div>
             </div>
             <div className="card">
             <header className="card-header">
                 <ul className="nav nav-tabs card-header-tabs">
                     <li className="nav-item">
-                        <a href="#" data-bs-target="#tab_specs" data-bs-toggle="tab" className="nav-link active">Projects</a>
+                        <a href="#" data-bs-target="#tab_specs" data-bs-toggle="tab" className="nav-link active">Clients</a>
                     </li>
                     <li className="nav-item">
-                        <a href="#" data-bs-target="#tab_warranty" data-bs-toggle="tab" className="nav-link">Clients</a>
+                        <a href="#" data-bs-target="#tab_warranty" data-bs-toggle="tab" className="nav-link">Projects</a>
                     </li>
                 </ul>
             </header>
@@ -119,26 +227,18 @@ function CompanyDetail(){
 
                                 {client.isActive ? (
                                 <td className="border text-center">
-                                    <i
-                                    className="fa fa-check"
-                                    title="Active"
-                                    style={{ fontSize: '24px', color: 'green' }}
-                                    ></i>
+                                    <i className="fa fa-check" title="Active" style={{ fontSize: '24px', color: 'green' }} ></i>
                                 </td>
                                 ) : (
                                 <td className="border text-center">
-                                    <i
-                                    className="fa fa-ban"
-                                    title="Blocked"
-                                    style={{ fontSize: '24px', color: 'red' }}
-                                    ></i>
+                                    <i className="fa fa-ban" title="Blocked" style={{ fontSize: '24px', color: 'red' }} ></i>
                                 </td>
                                 )}
                             </tr>
                             ))
                         ) : (
                             <tr>
-                            <td colSpan={3} align="center">
+                            <td colSpan={4} align="center">
                                 No Data Found
                             </td>
                             </tr>

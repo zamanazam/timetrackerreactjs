@@ -12,6 +12,7 @@ import NotAuthorized from './Pages/NotAuthorized';
 import LayoutPage from './Layout/LayoutPage';
 import Alert from './Components/Alert';
 import LogInLayout from './Layout/LogInLayout';
+import PopUps from './Components/PopUps';
 function App() {
   const PrivateRoute = ({ element, ...props }) => {
     const token = sessionStorage.getItem('Token');
@@ -24,8 +25,17 @@ function App() {
   };
 
   const [alert, setAlert] = useState(null);
+  const [popupProps, setPopupProps] = useState(null);
 
-    const showAlert = (alertType,message)=>{
+  const openPopup = (props) => {
+    setPopupProps(props);
+  };
+
+  const closePopup = () => {
+    setPopupProps(null);
+  };
+
+      const showAlert = (alertType,message)=>{
         setAlert({
             type:alertType,
             msg:message
@@ -36,20 +46,30 @@ function App() {
   return (
     <Router>
       <>
-        {alert && <Alert type={alert.type} message={alert.msg} />}
+      {popupProps && (
+      <PopUps 
+            show={popupProps.show} 
+            title={popupProps.title} 
+            message={popupProps.message} 
+            firstInputTitle={popupProps.firstInputTitle} 
+            secondInputTitle={popupProps.secondInputTitle} 
+            buttontitle={popupProps.buttontitle} 
+            onClose={closePopup} 
+            onClick={popupProps.onClick}  /> )}
+        {/* {alert && <Alert type={alert.type} message={alert.msg} />} */}
         <Routes>
         <Route path="/logIn/*" element={<LogInLayout />}>
           <Route index element={<LogIn />} />
           <Route path="createAccount" element={<CreateAccount />} />
         </Route>
-          <Route path='/' element={<LayoutPage showAlert={showAlert}/>}>
-            <Route exact path="/companies" element={<PrivateRoute element={<Companies showAlert={showAlert}/>} />} />
-            <Route exact path="/notAuthorized" element={<PrivateRoute element={<NotAuthorized showAlert={showAlert}/>} />} />
-            <Route exact path="/Detail/:companyId" element={<PrivateRoute element={<CompanyDetail showAlert={showAlert}/>} />} />
-            <Route exact path="/users" element={<PrivateRoute element={<Users showAlert={showAlert}/>} />} />
-            <Route exact path="/projects" element={<PrivateRoute element={<Projects showAlert={showAlert}/>} />} />
-            <Route exact path="/ProjectDetails/:id" element={<PrivateRoute element={<ProjectDetails showAlert={showAlert}/>} />} />
-            <Route exact path="/ProjectTimeLogs/:projectId/:AssigneeId" element={<PrivateRoute element={<ProjectTimeLogs showAlert={showAlert}/>} />} />
+            <Route path='/' element={<PrivateRoute element={<LayoutPage showAlert={showAlert}/>}/>}>
+            <Route exact path="/companies" element={<PrivateRoute element={<Companies showAlert={showAlert} openPopup={openPopup}/>} />} />
+            <Route exact path="/notAuthorized" element={<PrivateRoute element={<NotAuthorized showAlert={showAlert} openPopup={openPopup}/>} />} />
+            <Route exact path="/Detail/:companyId" element={<PrivateRoute element={<CompanyDetail showAlert={showAlert} openPopup={openPopup}/>} />} />
+            <Route exact path="/users" element={<PrivateRoute element={<Users showAlert={showAlert} openPopup={openPopup}/>} />} />
+            <Route exact path="/projects" element={<PrivateRoute element={<Projects showAlert={showAlert} openPopup={openPopup}/>} />} />
+            <Route exact path="/ProjectDetails/:id" element={<PrivateRoute element={<ProjectDetails showAlert={showAlert} openPopup={openPopup}/>} />} />
+            <Route exact path="/ProjectTimeLogs/:projectId/:AssigneeId" element={<PrivateRoute element={<ProjectTimeLogs showAlert={showAlert} openPopup={openPopup}/>} />} />
           </Route>
         </Routes>
       </>

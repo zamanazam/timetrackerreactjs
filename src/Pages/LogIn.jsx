@@ -42,10 +42,7 @@ function showPassword(){
     })
       .then((response) => response.json())
       .then((response) => {
-            debugger
-            console.log('data',response);
             if(response.id == undefined){
-                //showAlert("alert-warning alert-dismissible","Incorrect Password");
                 return false;
             }
             sessionStorage.setItem('RoleId',response.roleId);
