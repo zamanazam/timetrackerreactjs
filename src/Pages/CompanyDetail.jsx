@@ -2,17 +2,35 @@ import React,{useEffect,useState}from "react";
 import { apiUrl } from '../GlobalFile';
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
+<<<<<<< Updated upstream
 import CustomButton from "../Components/CustomButton";
 function CompanyDetail(){
+=======
+
+function CompanyDetail({showAlert,openPopup}){
+>>>>>>> Stashed changes
     const [CompanyData ,setCompanyData] = useState(null);
     const { companyId } = useParams();
     const navigate = useNavigate();
+<<<<<<< Updated upstream
 
+=======
+    const token = sessionStorage.getItem('Token');
+    const controller = new AbortController();
+    const signal = controller.signal;
+>>>>>>> Stashed changes
     useEffect(()=>{
         if (CompanyData === null) {
             GetCompanyDetailsbyId();
+<<<<<<< Updated upstream
         }
     },[CompanyData]);
+=======
+            return (()=>{
+                controller.abort();
+            })
+    },[]);
+>>>>>>> Stashed changes
 
     const CheckTimeLogbyAdmin = (id)=>{
         navigate('/ProjectTimeLogs/'+id+'/'+undefined);
@@ -33,7 +51,7 @@ function CompanyDetail(){
                 headers: headers,
             };
 
-            fetch(url,options)
+            fetch(url,options,{signal})
             .then((response) => response.json())
             .then((data) => {
                 console.log('Companies',data);
@@ -47,6 +65,7 @@ function CompanyDetail(){
     }
 
       const UpdateCompany = () => {
+<<<<<<< Updated upstream
         debugger;
         // const companyName = CompanyData.name; 
         // const companyEmail = CompanyData.email; 
@@ -54,16 +73,85 @@ function CompanyDetail(){
       
       };
 
+=======
+        if(companyName.trim() === ""){
+            setNameValid(false);
+            return false;
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isValid = emailRegex.test(companyEmail);
+        if(!isValid){
+            setEmailValid(false);
+            return false;
+        }
+        let status = false;
+        if(companyStatus == true){
+            status = true;
+        }
+
+        let UpdateCompanyDTO = {
+            name: companyName,
+            email: companyEmail,
+            isActive: status,
+            id: companyId
+        }
+
+
+         let url = apiUrl+'/Company/UpdateCompanybyId';
+         fetch(url,{
+             method: 'POST',
+             headers: {
+                     'Authorization': 'Bearer '+token,
+                     'Content-Type': 'application/json',
+             },
+             body: JSON.stringify(UpdateCompanyDTO),
+         }).then((response) => response.json())
+             .then(response => {
+                 if(response.statusCode == 200){
+                     showAlert('Success',response.message);
+                     GetCompanyDetailsbyId();
+                 }else{
+                     showAlert('Error',response.message);
+                 }
+                 console.log(response)
+             })
+             .catch(error =>{
+                 debugger
+                 console.log(error)
+             })   
+      
+      };
+
+      
+    const handleCompanyName = (e) => {
+        setCompanyName(e.target.value)
+        setNameValid(true);
+    };
+
+    const handleCompanyEmail = (e) =>{
+        setCompanyEmail(e.target.value);
+        setEmailValid(true);
+    }
+
+    const handleCompanyStatus = (e)=>{
+        const newValue = e.target.value === "true";
+        setCompanyStatus(newValue); 
+    }
+
+>>>>>>> Stashed changes
       const ProjectDetails = (projectId)=>{
-        debugger
         navigate('/ProjectDetails/' + projectId);
       }
 
     return (
         <div className="container">
+<<<<<<< Updated upstream
             <div className="row mt-4 mb-4">
                 <h4 className="text-danger">Company Details</h4>
             </div>
+=======
+                <h1 className="mt-4 mb-4">Company Details</h1>
+>>>>>>> Stashed changes
             <div className="row mb-2">
                 <div className="col-lg-4 col-md-6 col-sm-12">
                     <label>Company Name</label>
@@ -75,10 +163,17 @@ function CompanyDetail(){
                 </div>
                 <div className="col-lg-4 col-md-6 col-sm-12">
                     <label>Status</label>
+<<<<<<< Updated upstream
                         <select className="form-select" defaultValue={CompanyData?.isActive} >
                             <option value="true" >Active</option>
                             <option value="false" >Block</option>
                         </select>    
+=======
+                    <select className="form-select" onChange={handleCompanyStatus} defaultValue={CompanyData?.isActive ? "true" :"false"}>
+                        <option value="true">Active</option>
+                        <option value="false">Block</option>
+                    </select>
+>>>>>>> Stashed changes
                 </div> 
             </div>
             <div className="row mb-4">

@@ -40,10 +40,7 @@ function ProjectDetails(){
         <div className="container">
         {ProjectData !== null ? (
             <div>
-                <div className="row mt-4">
-                    <h4 className="text-danger text-uppercase fw-bold">Project Detail Page</h4>
-                </div>
-            
+                <h1 className="mt-4">Project Detail Page</h1>
                 <div className="row mt-4">
                     <div className="col-lg-6 col-md-6 col-sm-12">
                         <label>Project Name:</label>
@@ -56,7 +53,7 @@ function ProjectDetails(){
                                 <option >Pause</option>
                             </select>
                         <label className="mt-3">Created On:</label>
-                        <input className="border form-control w-100" defaultValue={ProjectData.createdOn} readOnly/>
+                        <input className="border form-control w-100"  defaultValue={new Date(ProjectData.createdOn).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} readOnly/>
                     </div>
                     <div className="col-lg-6 col-md-6 col-sm-12">
                         <label>Company Name:</label>
@@ -130,7 +127,7 @@ function ProjectDetails(){
 
                 <div className="row mt-4 mb-5">
                     <div className="float-end">
-                        <button className="btn btn-success float-end mt-3 ms-lg-1" >Update<span className="ms-3"><i className="fa fa-arrow-up" style={{fontsize:'20px'}}></i></span></button>
+                        <button className="btn btn-success float-end mt-3 ms-lg-1" >Update<span className="ms-3"><i className="fas fa-redo" style={{fontsize:'20px'}}></i></span></button>
                         <button className="btn btn-warning float-end mt-3">Assign<span className="ms-2"><i className="fa fa-plus" style={{fontsize:'20px'}}></i></span></button>
                     </div>
                 </div>

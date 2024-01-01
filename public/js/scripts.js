@@ -7,8 +7,8 @@
 // Scripts
 // 
 
-
 window.onload = function() {
+    debugger
     const sidebarToggle = document.body.querySelector('#sidebarToggle');
     console.log('scripts.js loaded');
     if (sidebarToggle) {
