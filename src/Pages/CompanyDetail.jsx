@@ -2,7 +2,7 @@ import React,{useEffect,useState}from "react";
 import { apiUrl } from '../GlobalFile';
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
-import CustomButton from "../Components/CustomButton";
+
 function CompanyDetail({showAlert,openPopup}){
     const [CompanyData ,setCompanyData] = useState(null);
     const [companyName, setCompanyName] = useState('');
@@ -14,9 +14,16 @@ function CompanyDetail({showAlert,openPopup}){
 
     const { companyId } = useParams();
     const navigate = useNavigate();
+
     const token = sessionStorage.getItem('Token');
-    useEffect(()=>{
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+   useEffect(()=>{
             GetCompanyDetailsbyId();
+            return (()=>{
+                controller.abort();
+            })
     },[]);
 
     const CheckTimeLogbyAdmin = (id)=>{
@@ -36,7 +43,7 @@ function CompanyDetail({showAlert,openPopup}){
                 headers: headers,
             };
 
-            fetch(url,options)
+            fetch(url,options,{signal})
             .then((response) => response.json())
             .then((data) => {
                 console.log('Companies',data);
@@ -81,6 +88,55 @@ function CompanyDetail({showAlert,openPopup}){
     }
 
       const UpdateCompany = () => {
+        if(companyName.trim() === ""){
+            setNameValid(false);
+            return false;
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isValid = emailRegex.test(companyEmail);
+        if(!isValid){
+            setEmailValid(false);
+            return false;
+        }
+        let status = false;
+        if(companyStatus == true){
+            status = true;
+        }
+
+        let UpdateCompanyDTO = {
+            name: companyName,
+            email: companyEmail,
+            isActive: status,
+            id: companyId
+        }
+
+
+         let url = apiUrl+'/Company/UpdateCompanybyId';
+         fetch(url,{
+             method: 'POST',
+             headers: {
+                     'Authorization': 'Bearer '+token,
+                     'Content-Type': 'application/json',
+             },
+             body: JSON.stringify(UpdateCompanyDTO),
+         }).then((response) => response.json())
+             .then(response => {
+                 if(response.statusCode == 200){
+                     showAlert('Success',response.message);
+                     GetCompanyDetailsbyId();
+                 }else{
+                     showAlert('Error',response.message);
+                 }
+                 console.log(response)
+             })
+             .catch(error =>{
+                 console.log(error)
+             })   
+      
+      };
+
+      
+    const handleCompanyName = (e) => {
         debugger
         if(companyName.trim() === ""){
             setNameValid(false);
@@ -132,7 +188,6 @@ function CompanyDetail({showAlert,openPopup}){
 
       
     const handleCompanyName = (e) => {
-        debugger
         setCompanyName(e.target.value)
         setNameValid(true);
     };
@@ -143,19 +198,18 @@ function CompanyDetail({showAlert,openPopup}){
     }
 
     const handleCompanyStatus = (e)=>{
-        debugger
+
         const newValue = e.target.value === "true";
         setCompanyStatus(newValue); 
     }
 
       const ProjectDetails = (projectId)=>{
-        debugger
         navigate('/ProjectDetails/' + projectId);
       }
 
     return (
         <div className="container">
-                <h1 className="mt-4">Company Details</h1>
+                <h1 className="mt-4 mb-4">Company Details</h1>
             <div className="row mb-2">
                 <div className="col-lg-4 col-md-6 col-sm-12">
                     <label>Company Name</label>
@@ -173,7 +227,8 @@ function CompanyDetail({showAlert,openPopup}){
                 </div>
                 <div className="col-lg-4 col-md-6 col-sm-12">
                     <label>Status</label>
-                    <select className="form-select" onChange={handleCompanyStatus} value={CompanyData?.isActive ? "true" :"false"}>
+
+                 <select className="form-select" onChange={handleCompanyStatus} value={CompanyData?.isActive ? "true" :"false"}>
                         <option value="true">Active</option>
                         <option value="false">Block</option>
                     </select>
