@@ -3,12 +3,14 @@ import { apiUrl } from '../GlobalFile';
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 import { useEffectOnce } from "../useEffectOnce";
+import PopUps from "../Components/PopUps";
 
-const CompanyDetail=({ showAlert, openPopup, changeLoaderState })=> {
+const CompanyDetail=()=> {
     const [CompanyData, setCompanyData] = useState(null);
     const [companyName, setCompanyName] = useState('');
     const [companyEmail, setCompanyEmail] = useState('');
     const [companyStatus, setCompanyStatus] = useState('');
+    const [popupProps, setPopupProps] = useState(null);
 
     const [isEmailValid, setEmailValid] = useState(true);
     const [isNameValid, setNameValid] = useState(true);
@@ -56,6 +58,7 @@ const CompanyDetail=({ showAlert, openPopup, changeLoaderState })=> {
     }
 
     const saveProject = (firstInputValue, secondInputValue) => {
+        debugger
         let AddProjectDTO = {
             Name: firstInputValue,
             Description: secondInputValue,
@@ -72,10 +75,10 @@ const CompanyDetail=({ showAlert, openPopup, changeLoaderState })=> {
         }).then((response) => response.json())
             .then(response => {
                 if (response.statusCode == 200) {
-                    showAlert('Success', response.message);
+                    //showAlert('Success', response.message);
                     GetCompanyDetailsbyId();
                 } else {
-                    showAlert('Error', response.message);
+                    //showAlert('Error', response.message);
                 }
                 console.log(response)
             })
@@ -83,7 +86,6 @@ const CompanyDetail=({ showAlert, openPopup, changeLoaderState })=> {
                 debugger
                 console.log(error)
             })
-
     }
 
     const UpdateCompany = () => {
@@ -119,19 +121,26 @@ const CompanyDetail=({ showAlert, openPopup, changeLoaderState })=> {
         }).then((response) => response.json())
             .then(response => {
                 if (response.statusCode == 200) {
-                    showAlert('Success', response.message);
+                   // showAlert('Success', response.message);
                     GetCompanyDetailsbyId();
                 } else {
-                    showAlert('Error', response.message);
+                   // showAlert('Error', response.message);
                 }
                 console.log(response)
             })
             .catch(error => {
                 console.log(error)
             })
-
     };
-
+    
+    const openPopup = (props) => {
+      //  event.preventDefault();
+        setPopupProps(props);
+      };
+    
+      const closePopup = () => {
+        setPopupProps(null);
+      };
 
     const handleCompanyName = (e) => {
         e.preventDefault();
@@ -157,6 +166,16 @@ const CompanyDetail=({ showAlert, openPopup, changeLoaderState })=> {
 
     return (
         <div className="container">
+            {popupProps && (
+                <PopUps 
+                      show={popupProps.show} 
+                      title={popupProps.title} 
+                      message={popupProps.message} 
+                      firstInputTitle={popupProps.firstInputTitle} 
+                      secondInputTitle={popupProps.secondInputTitle} 
+                      buttontitle={popupProps.buttontitle} 
+                      onClose={closePopup} 
+                      onClick={popupProps.onClick}  /> )}
              <h1 className="mt-4 mb-4">Company Details</h1>
             <div className="row mb-2">
                 <div className="col-lg-4 col-md-6 col-sm-12">
@@ -187,8 +206,6 @@ const CompanyDetail=({ showAlert, openPopup, changeLoaderState })=> {
                   
                     <button type="button" href="#" className="btn btn-warning mt-4 float-end me-2" 
                     onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
                         openPopup({
                             show: true,
                             title: "Create Project",

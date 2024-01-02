@@ -3,16 +3,17 @@ import { Modal, ModalFooter } from 'react-bootstrap';
 
 
 function PopUps(props) {
+    debugger
     const [firstInputValue, setFirstInputValue] = useState('');
     const [secondInputValue, setSecondInputValue] = useState('');
     const [isEmailValid, setEmailValid] = useState(true);
     const [isNameValid, setNameValid] = useState(true);
 
         useEffect(() => {
-    if (!props) {
-      return null;
-    }
-  }, [props]);
+            if (!props) {
+                return null;
+            }
+        }, []);
 
   const handleFirstInputChange = (e) => {
       setFirstInputValue(e.target.value);
@@ -27,20 +28,19 @@ function PopUps(props) {
 
   const handleClick = (event) => {
         debugger
-        event.preventDefault();
         if (firstInputValue.trim() === "") {
-        setNameValid(false);
-        } else {
-        setNameValid(true);
+                setNameValid(false);
+                return false;
         }
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const isValidEmail = emailRegex.test(secondInputValue);
     
         if (!isValidEmail && props.secondInputTitle !== "Description") {
-            setEmailValid(false);
+                setEmailValid(false);
+                return false;
         } else {
             props.onClick(firstInputValue, secondInputValue);
-           // props.onClose(event);
+            props.onClose(event);
         }
   };
 
@@ -102,7 +102,7 @@ function PopUps(props) {
                 }
             </Modal.Body>
             <ModalFooter>
-                            <span className="btn btn-secondary" data-bs-dismiss="modal" onClick={props.onClose}>Close</span>
+                            <span className="btn btn-secondary" onClick={props.onClose}>Close</span>
                             <span className="btn btn-primary" onClick={(e) => handleClick(e)}>{props.buttontitle}</span>
             </ModalFooter>
         </Modal>

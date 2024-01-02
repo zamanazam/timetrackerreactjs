@@ -7,7 +7,6 @@
 // Scripts
 
 window.onload = function() {
-    debugger
     const sidebarToggle = document.body.querySelector('#sidebarToggle');
     if (sidebarToggle) {
         sidebarToggle.addEventListener('click', function(event) {
