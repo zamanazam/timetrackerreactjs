@@ -1,18 +1,14 @@
 import React,{useEffect,useState} from "react";
 import { apiUrl,SuperAdminRoleId} from "../GlobalFile";
 import { useNavigate } from 'react-router-dom';
+import { useEffectOnce } from "../useEffectOnce";
 
-function Users(){
+function Users({changeLoaderState}){
     const navigate = useNavigate();
     const currentRoleId = sessionStorage.getItem('RoleId');
     const [Users,setUsers]=useState(null);
-
-    useEffect(() => {
-        getUsers();
-    }, [currentRoleId]); 
-
-
     const getUsers=(Page = 1)=>{
+        //changeLoaderState(true);
         const token = sessionStorage.getItem('Token');
         const url = new URL(apiUrl+'/Admin/GetAllUsers');
         const PageSize = 10;
@@ -33,7 +29,7 @@ function Users(){
         })
         .then((response) => response.json())
         .then((data) => {
-
+           // changeLoaderState(false);
             if(Users == null){
                 setUsers(data.results);
             }
@@ -43,6 +39,12 @@ function Users(){
             console.error('Error:', error);
         });    
     }
+
+    useEffectOnce(() => {
+        getUsers();
+    }, [currentRoleId]); 
+
+
 
     return(
         <div className="container">

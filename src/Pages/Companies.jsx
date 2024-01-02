@@ -1,12 +1,15 @@
 import React,{useEffect,useState}from "react";
 import { SuperAdminRoleId, apiUrl } from '../GlobalFile';
 import { useNavigate } from 'react-router-dom';
+import { useEffectOnce } from "../useEffectOnce";
 
-const Companies =({ showAlert, openPopup })=>{
+const Companies =({ showAlert, openPopup,changeLoaderState })=>{
     const [AllCompanies, setCompaniesData] = useState(null);
     const navigate = useNavigate();
     const currentRoleId = sessionStorage.getItem('RoleId');
     const token = sessionStorage.getItem('Token');
+    let controller = new AbortController();
+    let signal = controller.signal;
         const CompanyDetail =(id)=>{
         //    showAlert('danger', 'Invalid Company ID');
             navigate('/Detail/'+id);
@@ -40,36 +43,37 @@ const Companies =({ showAlert, openPopup })=>{
                 })   
         }
         const GetAllCompanies = async (Page = 1) => {
-            const newUrl = apiUrl + '/Company/GetAllComapnies';
-            if (Page == null) Page = 1;
-        
-            const PageSize = 10;
-        
-            const url = new URL(newUrl);
-            url.searchParams.append('Page', Page);
-            url.searchParams.append('PageSize', PageSize);
-        
-            const headers = new Headers();
-            headers.append('Authorization', 'Bearer ' + token);
-            headers.append('Content-Type', 'application/json');
-        
-            const options = {
-              method: 'GET',
-              headers: headers,
-            };
-        
-            try {
-              const response = await fetch(url, options);
-              const data = await response.json();
-              console.log('data', data.results);
-              setCompaniesData(data.results);
-            } catch (error) {
-              console.error('Error:', error);
+            try{
+                 const newUrl = apiUrl + '/Company/GetAllComapnies';
+                 if (Page == null) Page = 1;
+             
+                 const PageSize = 10;
+             
+                 const url = new URL(newUrl);
+                 url.searchParams.append('Page', Page);
+                 url.searchParams.append('PageSize', PageSize);
+             
+                 const headers = new Headers();
+                 headers.append('Authorization', 'Bearer ' + token);
+                 headers.append('Content-Type', 'application/json');
+             
+                 const options = {
+                   method: 'GET',
+                   headers: headers,
+                 };
+                   const response = await fetch(url, options,{signal});
+                   const data = await response.json();
+                   //changeLoaderState(false);
+                   console.log('data', data.results);
+                   setCompaniesData(data.results);
+            }catch(error){
+
             }
           };
         
-          useEffect(() => {
-            GetAllCompanies();
+          useEffectOnce(() => {
+            //changeLoaderState(true);
+             GetAllCompanies();
           }, []);
         
     return (

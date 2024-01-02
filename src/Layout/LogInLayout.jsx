@@ -5,7 +5,7 @@ import Alert from '../Components/Alert'
 function LogInLayout() {
   return (
     <>
-        <Outlet />
+        <Outlet/>
     </>
   )
 }

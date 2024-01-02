@@ -7,10 +7,10 @@
 // Scripts
 // 
 
-window.onload = function() {
-    debugger
+window.addEventListener('DOMContentLoaded', event => {
+    // Simple-DataTables
+    // https://github.com/fiduswriter/Simple-DataTables/wiki
     const sidebarToggle = document.body.querySelector('#sidebarToggle');
-    console.log('scripts.js loaded');
     if (sidebarToggle) {
         sidebarToggle.addEventListener('click', function(event) {
             event.preventDefault();
@@ -18,6 +18,19 @@ window.onload = function() {
             localStorage.setItem('sb|sidebar-toggle', document.body.classList.contains('sb-sidenav-toggled'));
         });
     }
-};
+});
+
+
+// window.onload = function() {
+//     debugger
+//     const sidebarToggle = document.body.querySelector('#sidebarToggle');
+//     if (sidebarToggle) {
+//         sidebarToggle.addEventListener('click', function(event) {
+//             event.preventDefault();
+//             document.body.classList.toggle('sb-sidenav-toggled');
+//             localStorage.setItem('sb|sidebar-toggle', document.body.classList.contains('sb-sidenav-toggled'));
+//         });
+//     }
+// };
 
 

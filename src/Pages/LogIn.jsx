@@ -3,7 +3,8 @@ import { apiUrl,SuperAdminRoleId } from '../GlobalFile';
 import { Link, useNavigate } from 'react-router-dom';
 
 
-function LogIn(){
+function LogIn({changeLoaderState}){
+    console.log('login',1);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [inputType, setInputType] = useState('password'||'text')
@@ -16,7 +17,6 @@ function showPassword(){
       }else{
         setInputType('password');
       }
-
   }
   const handleEmailChange = (e) => {
         setEmail
@@ -28,6 +28,7 @@ function showPassword(){
   }
 
   const handleSubmit = () => {
+    changeLoaderState(true);
     const AuthenticateRequest = {
       email: email,
       password: password,
@@ -42,6 +43,7 @@ function showPassword(){
     })
       .then((response) => response.json())
       .then((response) => {
+            changeLoaderState(false);
             if(response.id == undefined){
                 return false;
             }
@@ -58,7 +60,7 @@ function showPassword(){
       .catch((error) => {
         console.error('Error:', error);
       });
-  };
+ };
 
   return (
     <div className="bg-primary">
@@ -100,22 +102,10 @@ function showPassword(){
                     </div>
                 </main>
             </div>
-            {/* <div id="layoutAuthentication_footer">
-                <footer className="py-4 bg-light mt-auto">
-                    <div className="container-fluid px-4">
-                        <div className="d-flex align-items-center justify-content-between small">
-                            <div className="text-muted">Copyright &copy; Your Website 2023</div>
-                            <div>
-                                <a href="#">Privacy Policy</a>
-                                &middot;
-                                <a href="#">Terms &amp; Conditions</a>
-                            </div>
-                        </div>
-                    </div>
-                </footer>
-            </div> */}
         </div>
     </div>
+
+
 //     <div classNameName="container">
 //         <section classNameName="section register d-flex position-absolute flex-column align-items-center justify-content-center py-4">
 //     <div classNameName="container">
@@ -176,7 +166,6 @@ function showPassword(){
 // </section>
 //     </div>
 
-    
     );
   }
   export default LogIn;
