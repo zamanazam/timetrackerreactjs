@@ -5,11 +5,9 @@
     */
     // 
 // Scripts
-// 
 
-window.addEventListener('DOMContentLoaded', event => {
-    // Simple-DataTables
-    // https://github.com/fiduswriter/Simple-DataTables/wiki
+window.onload = function() {
+    debugger
     const sidebarToggle = document.body.querySelector('#sidebarToggle');
     if (sidebarToggle) {
         sidebarToggle.addEventListener('click', function(event) {
@@ -18,11 +16,10 @@ window.addEventListener('DOMContentLoaded', event => {
             localStorage.setItem('sb|sidebar-toggle', document.body.classList.contains('sb-sidenav-toggled'));
         });
     }
-});
+};
 
 
-// window.onload = function() {
-//     debugger
+// document.addEventListener('DOMContentLoaded', function() {
 //     const sidebarToggle = document.body.querySelector('#sidebarToggle');
 //     if (sidebarToggle) {
 //         sidebarToggle.addEventListener('click', function(event) {
@@ -31,6 +28,15 @@ window.addEventListener('DOMContentLoaded', event => {
 //             localStorage.setItem('sb|sidebar-toggle', document.body.classList.contains('sb-sidenav-toggled'));
 //         });
 //     }
-// };
 
+//     // Initialize Bootstrap tooltip and popover
+//     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+//     const tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+//         return new bootstrap.Tooltip(tooltipTriggerEl);
+//     });
 
+//     const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+//     const popoverList = popoverTriggerList.map(function(popoverTriggerEl) {
+//         return new bootstrap.Popover(popoverTriggerEl);
+//     });
+// });

@@ -7,6 +7,7 @@ function Users({changeLoaderState}){
     const navigate = useNavigate();
     const currentRoleId = sessionStorage.getItem('RoleId');
     const [Users,setUsers]=useState(null);
+    
     const getUsers=(Page = 1)=>{
         //changeLoaderState(true);
         const token = sessionStorage.getItem('Token');
@@ -42,8 +43,7 @@ function Users({changeLoaderState}){
 
     useEffectOnce(() => {
         getUsers();
-    }, [currentRoleId]); 
-
+    }, []); 
 
 
     return(

@@ -25,8 +25,9 @@ function PopUps(props) {
   };
 
 
-  const handleClick = () => {
-    debugger;
+  const handleClick = (event) => {
+        debugger
+        event.preventDefault();
         if (firstInputValue.trim() === "") {
         setNameValid(false);
         } else {
@@ -39,7 +40,7 @@ function PopUps(props) {
             setEmailValid(false);
         } else {
             props.onClick(firstInputValue, secondInputValue);
-            props.onClose();
+           // props.onClose(event);
         }
   };
 
@@ -101,8 +102,8 @@ function PopUps(props) {
                 }
             </Modal.Body>
             <ModalFooter>
-                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={props.onClose}>Close</button>
-                            <button type="button" className="btn btn-primary" onClick={handleClick}>{props.buttontitle}</button>
+                            <span className="btn btn-secondary" data-bs-dismiss="modal" onClick={props.onClose}>Close</span>
+                            <span className="btn btn-primary" onClick={(e) => handleClick(e)}>{props.buttontitle}</span>
             </ModalFooter>
         </Modal>
     )

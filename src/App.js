@@ -34,6 +34,8 @@ function App() {
  };
 
   const openPopup = (props) => {
+    const event = props.event;
+    event.preventDefault();
     setPopupProps(props);
   };
 

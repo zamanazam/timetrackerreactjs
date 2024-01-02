@@ -71,8 +71,7 @@ const Companies =({ showAlert, openPopup,changeLoaderState })=>{
             }
           };
         
-          useEffectOnce(() => {
-            //changeLoaderState(true);
+          useEffect(() => {
              GetAllCompanies();
           }, []);
         

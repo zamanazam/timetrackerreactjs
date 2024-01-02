@@ -20,8 +20,8 @@ const CompanyDetail=({ showAlert, openPopup, changeLoaderState })=> {
     const controller = new AbortController();
     const signal = controller.signal;
 
-    const GetCompanyDetailsbyId = () => {
-       // changeLoaderState(true);
+    const GetCompanyDetailsbyId = (e) => {
+        //changeLoaderState(true);
         const headers = new Headers();
         const token = sessionStorage.getItem('Token');
         headers.append('Authorization', 'Bearer ' + token);
@@ -46,12 +46,9 @@ const CompanyDetail=({ showAlert, openPopup, changeLoaderState })=> {
             });
     };
 
-    useEffectOnce(() => {
+    useEffect(()=>{
         GetCompanyDetailsbyId();
-        return () => {
-            controller.abort();
-        };
-    }, []);
+    },[]);
 
 
     const CheckTimeLogbyAdmin = (id) => {
@@ -137,17 +134,19 @@ const CompanyDetail=({ showAlert, openPopup, changeLoaderState })=> {
 
 
     const handleCompanyName = (e) => {
+        e.preventDefault();
         setCompanyName(e.target.value)
         setNameValid(true);
     };
 
     const handleCompanyEmail = (e) => {
+        e.preventDefault();
         setCompanyEmail(e.target.value);
         setEmailValid(true);
     }
 
     const handleCompanyStatus = (e) => {
-
+        e.preventDefault();
         const newValue = e.target.value === "true";
         setCompanyStatus(newValue);
     }
@@ -176,7 +175,6 @@ const CompanyDetail=({ showAlert, openPopup, changeLoaderState })=> {
                 </div>
                 <div className="col-lg-4 col-md-6 col-sm-12">
                     <label>Status</label>
-
                     <select className="form-select" onChange={handleCompanyStatus} value={CompanyData?.isActive ? "true" : "false"}>
                         <option value="true">Active</option>
                         <option value="false">Block</option>
@@ -186,14 +184,21 @@ const CompanyDetail=({ showAlert, openPopup, changeLoaderState })=> {
             <div className="row mb-4">
                 <div>
                     <button className="btn btn-success mt-4 float-end" onClick={() => UpdateCompany()}><span className="me-2"><i className="fas fa-redo"></i></span>Update</button>
-                    <button className="btn btn-warning mt-4 float-end me-2" onClick={() => openPopup({
-                        show: true,
-                        title: "Create Project",
-                        firstInputTitle: 'Name',
-                        secondInputTitle: 'Description',
-                        buttontitle: 'Save',
-                        onClick: saveProject
-                    })}>
+                  
+                    <button type="button" href="#" className="btn btn-warning mt-4 float-end me-2" 
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openPopup({
+                            show: true,
+                            title: "Create Project",
+                            firstInputTitle: 'Name',
+                            secondInputTitle: 'Description',
+                            buttontitle: 'Save',
+                            onClick: saveProject,
+                            event: e
+                        });
+                    }}>
                         <span className="me-2">
                             <i className="fa fa-plus"></i>
                         </span>Project
