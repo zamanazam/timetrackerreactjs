@@ -10,10 +10,8 @@ import ProjectTimeLogs from './Pages/TimeLogs';
 import CreateAccount from './Pages/CreateAccount';
 import NotAuthorized from './Pages/NotAuthorized';
 import LayoutPage from './Layout/LayoutPage';
-import Alert from './Components/Alert';
 import LogInLayout from './Layout/LogInLayout';
-import PopUps from './Components/PopUps';
-import LoadingSpinner from './Components/LoadingSpinner';
+
 function App() {
   const PrivateRoute = ({ element, ...props }) => {
     const token = sessionStorage.getItem('Token');
@@ -26,22 +24,11 @@ function App() {
   };
 
   const [alert, setAlert] = useState(null);
- // const [popupProps, setPopupProps] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const changeLoaderState = (input = false) => {
     setIsLoading(input);
  };
-
-  // const openPopup = (props) => {
-  //   const event = props.event;
-  //   event.preventDefault();
-  //   setPopupProps(props);
-  // };
-
-  // const closePopup = () => {
-  //   setPopupProps(null);
-  // };
 
       const showAlert = (alertType,message)=>{
         setAlert({
@@ -54,32 +41,20 @@ function App() {
   return (
     <Router>
       <>
-      {/*{popupProps && (
-                <PopUps 
-                      show={popupProps.show} 
-                      title={popupProps.title} 
-                      message={popupProps.message} 
-                      firstInputTitle={popupProps.firstInputTitle} 
-                      secondInputTitle={popupProps.secondInputTitle} 
-                      buttontitle={popupProps.buttontitle} 
-                      onClose={closePopup} 
-                      onClick={popupProps.onClick}  /> )}
-                       {alert && <Alert type={alert.type} message={alert.msg} />} 
-                      {isLoading && <LoadingSpinner />}*/}
         <Routes>
               <Route path="/logIn/*" element={<LogInLayout />}>
                 <Route index element={<LogIn changeLoaderState={changeLoaderState}/>} />
-                <Route path="createAccount" element={<CreateAccount changeLoaderState={changeLoaderState}/>} />
               </Route>
               
                 <Route path='/' element={<PrivateRoute element={<LayoutPage showAlert={showAlert}/>}/>}>
-                <Route exact path="/companies" element={<PrivateRoute element={<Companies showAlert={showAlert} changeLoaderState={changeLoaderState}/>} />} />
+                <Route exact path="/companies" element={<PrivateRoute element={<Companies />} />} />
                 <Route exact path="/notAuthorized" element={<PrivateRoute element={<NotAuthorized showAlert={showAlert} changeLoaderState={changeLoaderState}/>} />} />
-                <Route exact path="/Detail/:companyId" element={<PrivateRoute element={<CompanyDetail showAlert={showAlert} changeLoaderState={changeLoaderState}/>} />} />
-                <Route exact path="/users" element={<PrivateRoute element={<Users showAlert={showAlert} changeLoaderState={changeLoaderState}/>} />} />
+                <Route exact path="/Detail/:companyId" element={<PrivateRoute element={<CompanyDetail/>} />} />
+                <Route exact path="/users" element={<PrivateRoute element={<Users />} />} />
                 <Route exact path="/projects" element={<PrivateRoute element={<Projects showAlert={showAlert} changeLoaderState={changeLoaderState}/>} />} />
                 <Route exact path="/ProjectDetails/:id" element={<PrivateRoute element={<ProjectDetails showAlert={showAlert} changeLoaderState={changeLoaderState}/>} />} />
                 <Route exact path="/ProjectTimeLogs/:projectId/:AssigneeId" element={<PrivateRoute element={<ProjectTimeLogs showAlert={showAlert} changeLoaderState={changeLoaderState}/>} />} />
+                <Route path="/createAccount" element={<PrivateRoute element={<CreateAccount />} />}/>
               </Route>
         </Routes>
       </>
