@@ -95,6 +95,40 @@ function PopUps(props) {
                                     </>
                                 }
                             </div>
+
+                            <div className="mb-3">
+                                <label htmlFor="message-text" className="col-form-label">{props.thirdInputTitle}</label>
+                                {props.thirdInputTitle === "Description" ? (
+                                    <textarea
+                                        className="form-control"
+                                        id="message-text"
+                                        value={secondInputValue}
+                                        onChange={handleSecondInputChange}
+                                    ></textarea>
+                                ) : props.thirdInputTitle === "multiselect" ? (
+                                    // Your multiselect component goes here
+                                    // For example:
+                                    <MultiselectComponent
+                                        options={multiselectOptions}
+                                        selectedValues={selectedMultiselectValues}
+                                        onChange={handleMultiselectChange}
+                                    />
+                                ) : (
+                                    <>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            id="message-text"
+                                            value={secondInputValue}
+                                            onChange={handleSecondInputChange}
+                                        />
+                                        {!isEmailValid && (
+                                            <p className='text-danger mt-1 small'>Enter a valid email</p>
+                                        )}
+                                    </>
+                                )}
+
+                            </div>
                         </form>
                     </>
                 }

@@ -2,14 +2,16 @@ import React,{useState} from 'react';
 import { apiUrl,SuperAdminRoleId } from '../GlobalFile';
 import { Link, useNavigate } from 'react-router-dom';
 
+import LoadingSpinner from "../Components/LoadingSpinner";
 
-function LogIn({changeLoaderState}){
+function LogIn(){
     console.log('login',1);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [inputType, setInputType] = useState('password'||'text')
   const navigate = useNavigate();
 
+  const [isLoading, setIsLoading] = useState(false);
 
 function showPassword(){
       if(inputType == 'password'){
@@ -28,7 +30,7 @@ function showPassword(){
   }
 
   const handleSubmit = () => {
-    changeLoaderState(true);
+    setIsLoading(true);
     const AuthenticateRequest = {
       email: email,
       password: password,
@@ -43,7 +45,7 @@ function showPassword(){
     })
       .then((response) => response.json())
       .then((response) => {
-            changeLoaderState(false);
+            setIsLoading(false);
             if(response.id == undefined){
                 return false;
             }
@@ -64,6 +66,7 @@ function showPassword(){
 
   return (
     <div className="bg-primary">
+    {isLoading && <LoadingSpinner />}
     <div id="layoutAuthentication">
             <div id="layoutAuthentication_content">
                 <main>
