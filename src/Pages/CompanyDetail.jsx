@@ -1,22 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { apiUrl } from '../GlobalFile';
+import { apiUrl,statusArray } from '../GlobalFile';
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 import PopUps from "../Components/PopUps";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import Alert from "../Components/Alert";
+import CustomFields from "../Components/CustomFields";
 
 const CompanyDetail = () => {
     const [CompanyData, setCompanyData] = useState(null);
-    const [companyName, setCompanyName] = useState('');
-    const [companyEmail, setCompanyEmail] = useState('');
-    const [companyStatus, setCompanyStatus] = useState('');
     const [isEmailValid, setEmailValid] = useState(true);
     const [isNameValid, setNameValid] = useState(true);
 
     const [popupProps, setPopupProps] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [alert, setAlert] = useState(null);
+    const [formInput, updateFormInput] = useState({})
 
     const { companyId } = useParams();
     const navigate = useNavigate();
@@ -50,11 +49,12 @@ const CompanyDetail = () => {
         fetch(url, options, { signal })
             .then((response) => response.json())
             .then((data) => {
-                console.log('Companies', data);
                 setCompanyData(data);
-                setCompanyStatus(data?.isActive);
-                setCompanyName(data?.name);
-                setCompanyEmail(data?.email);
+                    updateFormInput({
+                        name: data?.name,
+                        email: data?.email,
+                        isActive: data?.isActive
+                    })
                 setIsLoading(false);
             })
             .catch((error) => {
@@ -71,11 +71,11 @@ const CompanyDetail = () => {
         navigate('/ProjectTimeLogs/' + id + '/' + undefined);
     }
 
-    const saveProject = (firstInputValue, secondInputValue) => {
+    const saveProject = (popReturn) => {
         setIsLoading(true);
         let AddProjectDTO = {
-            Name: firstInputValue,
-            Description: secondInputValue,
+            Name: popReturn.Name,
+            Description: popReturn.Description,
             CompanyId: companyId
         }
         let url = apiUrl + '/Project/AddNewProjects';
@@ -102,22 +102,24 @@ const CompanyDetail = () => {
     }
 
     const UpdateCompany = () => {
-        setIsLoading(true)
-        if (companyName.trim() === "") {
+        setIsLoading(true);
+        if (formInput.name.trim() === "") {
+            setIsLoading(false);
             setNameValid(false);
             return false;
         }
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const isValid = emailRegex.test(companyEmail);
+        const isValid = emailRegex.test(formInput.email);
         if (!isValid) {
+            setIsLoading(false);
             setEmailValid(false);
             return false;
         }
 
         let UpdateCompanyDTO = {
-            name: companyName,
-            email: companyEmail,
-            isActive: companyStatus,
+            name: formInput.name,
+            email: formInput.email,
+            isActive: formInput.isActive,
             id: companyId
         }
         let url = apiUrl + '/Company/UpdateCompanybyId';
@@ -143,20 +145,8 @@ const CompanyDetail = () => {
             })
     };
 
-
-    const handleCompanyName = (e) => {
-        setCompanyName(e.target.value)
-        setNameValid(true);
-    };
-
-    const handleCompanyEmail = (e) => {
-        e.preventDefault();
-        setCompanyEmail(e.target.value);
-        setEmailValid(true);
-    }
-
     const handleCompanyStatus = (e) => {
-        setCompanyStatus(!companyStatus);
+        updateFormInput({ ...formInput, isActive: !formInput.isActive })
     }
 
     const ProjectDetails = (projectId) => {
@@ -168,39 +158,36 @@ const CompanyDetail = () => {
             {alert && <Alert type={alert.type} message={alert.msg} />}
             <div className="container">
                 {popupProps && (
-                    <PopUps
-                        show={popupProps.show}
-                        title={popupProps.title}
-                        message={popupProps.message}
-                        firstInputTitle={popupProps.firstInputTitle}
-                        secondInputTitle={popupProps.secondInputTitle}
-                        buttontitle={popupProps.buttontitle}
-                        onClose={closePopup}
-                        onClick={popupProps.onClick} />)}
+                    <PopUps                        inputs={popupProps.inputs||null}
+                    show={popupProps.show}
+                    title={popupProps.title || null}
+                    message={popupProps.message || null}
+                    buttontitle={popupProps.buttontitle || null}
+                    onClose={closePopup}
+                    onClick={saveProject} />)}
                 {isLoading && <LoadingSpinner />}
 
                 <h1 className="mt-4 mb-4">Company Details</h1>
                 <div className="row mb-2">
                     <div className="col-lg-4 col-md-6 col-sm-12">
                         <label>Company Name</label>
-                        <input type="text" className="form-control" onChange={handleCompanyName} defaultValue={CompanyData?.name} />
+                        <CustomFields classField="form-control" type="text" placeholder="Name"
+                                             value={formInput.name} onChange={e => updateFormInput({ ...formInput, name: e.target.value })} ></CustomFields>
                         {!isNameValid && (
                             <p className='text-danger mt-1 small'>Enter name first</p>
                         )}
                     </div>
                     <div className="col-lg-4 col-md-6 col-sm-12">
                         <label>Company Email</label>
-                        <input type="text" className="form-control" onChange={handleCompanyEmail} defaultValue={CompanyData?.email} />
+                        <CustomFields classField="form-control" type="email" placeholder="Email"
+                                             value={formInput.email} onChange={e => updateFormInput({ ...formInput, email: e.target.value })} ></CustomFields>
                         {!isEmailValid && (
                             <p className='text-danger mt-1 small'>Enter valid email</p>
                         )}
                     </div>
                     <div className="col-lg-4 col-md-6 col-sm-12">
                         <label>Status</label>
-                        <select className="form-select" onChange={handleCompanyStatus} value={companyStatus ? "true" : "false"}>
-                            <option value="true">Active</option>
-                            <option value="false">Block</option>
-                        </select>
+                        <CustomFields classField="form-select" type="select" placeholder="Project Status" value={formInput.isActive} onChange={handleCompanyStatus} optionsArray={statusArray}></CustomFields>
                     </div>
                 </div>
                 <div className="row mb-4">
@@ -208,17 +195,16 @@ const CompanyDetail = () => {
                         <button className="btn btn-success mt-4 float-end" onClick={() => UpdateCompany()}><span className="me-2"><i className="fas fa-redo"></i></span>Update</button>
 
                         <button type="button" href="#" className="btn btn-warning mt-4 float-end me-2"
-                            onClick={(e) => {
-                                openPopup({
-                                    show: true,
-                                    title: "Create Project",
-                                    firstInputTitle: 'Name',
-                                    secondInputTitle: 'Description',
-                                    buttontitle: 'Save',
-                                    onClick: saveProject,
-                                    event: e
-                                });
-                            }}>
+                            onClick={() => openPopup({
+                                inputs: [
+                                    { name:'Name', InputTitle: 'Name',classField:'form-control mb-4', placeholder : 'Name', type: 'text'},
+                                    { name:'Description', InputTitle: 'Description',classField:'form-control mb-2', placeholder : 'Description', type: 'textarea' },
+                                ],
+                                show: true,
+                                title: 'Create Project',
+                                buttontitle: 'Save',
+                                onClick: saveProject,
+                            })}>
                             <span className="me-2">
                                 <i className="fa fa-plus"></i>
                             </span>Project

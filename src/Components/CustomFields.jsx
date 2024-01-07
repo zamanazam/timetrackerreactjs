@@ -1,52 +1,65 @@
-import React, { useEffect } from 'react'
-import { MultiSelect } from "@blueprintjs/select"; 
-import { MenuItem } from "@blueprintjs/core"; 
-import "@blueprintjs/core/lib/css/blueprint.css"; 
+import React, { useEffect, useState } from 'react'
+import "@blueprintjs/core/lib/css/blueprint.css";
 import "@blueprintjs/select/lib/css/blueprint-select.css";
-import { useState } from "react"; 
-function CustomFields({ classField, type, placeholder, onChange ,value,optionsArray,hideOption}) {
-    useEffect(()=>{
-    },[])
-  return (
-    <>
-        {type == "text" 
-            ? 
-                <input className={classField} type={type} placeholder={placeholder} defaultValue={value} onChange={onChange} />
-            :
-            null
-        }
+import Multiselect from 'multiselect-react-dropdown';
 
-        {type == "email" 
-            ? 
-                <input className={classField} type={type} placeholder={placeholder} defaultValue={value} onChange={onChange} />
-            :
-            null
-        }
+function CustomFields({ name, classField, type, placeholder, onChange, value, optionsArray, hideOption }) {
+    const [selectedItems, setSelectedItems] = useState([]);
 
-        {type == "password" 
-            ? 
-                <input className={classField} type={type} placeholder={placeholder} defaultValue={value} onChange={onChange} />
-            :
-            null
-        }
+    useEffect(() => {
+        setSelectedItems(value || []);
+    }, [value]);
 
-        {type == "checkbox" 
-            ? 
-                <input className={classField} type={type} placeholder={placeholder} defaultValue={value} onChange={onChange} />
-            :
-            null
-        }
+    const handleSelect = (selectedList, selectedItem) => {
+        setSelectedItems(selectedList);
+        onChange(name, selectedList);
+    }
 
-        {type == "textarea" 
-            ?
-                <textarea className={classField} type={type} placeholder={placeholder} defaultValue={value} onChange={onChange} ></textarea>
-            :
-            null
-        }
+    const handleRemove = (selectedList, removedItem) => {
+        setSelectedItems(selectedList);
+        onChange(name, selectedList);
+    }
 
-        {type == "select" 
-            ? 
-                <select className={classField} type={type} placeholder={placeholder} value={value} onChange={onChange}>
+    return (
+        <>
+            {type == "text"
+                ?
+                <input name={name} className={classField} required type={type} placeholder={placeholder} defaultValue={value} onChange={onChange} />
+                :
+                null
+            }
+
+            {type == "email"
+                ?
+                <input name={name} className={classField} type={type} placeholder={placeholder} defaultValue={value} onChange={onChange} pattern="^.+@.+\..+$" title='Please enter a valid email address' />
+                :
+                null
+            }
+
+            {type == "password"
+                ?
+                <input name={name} className={classField} type={type} placeholder={placeholder} defaultValue={value} onChange={onChange} />
+                :
+                null
+            }
+
+            {type == "checkbox"
+                ?
+                <input name={name} className={classField} type={type} placeholder={placeholder} defaultValue={value} onChange={onChange} />
+                :
+                null
+            }
+
+            {type == "textarea"
+                ?
+                <textarea name={name} className={classField} type={type} placeholder={placeholder} defaultValue={value} onChange={onChange} ></textarea>
+                :
+                null
+            }
+
+            {type == "select"
+                ?
+                <select name={name} className={classField} type={type} placeholder={placeholder} value={value} onChange={onChange}>
                     {optionsArray.filter(option => option.id != hideOption)
                         .map((option, index) => (
                             <option key={index} value={option.id}>
@@ -55,41 +68,27 @@ function CustomFields({ classField, type, placeholder, onChange ,value,optionsAr
                         ))
                     }
                 </select>
-            :
+                :
                 null}
 
-         {type == "multiselect"
-         ?
-         <MultiSelect items={optionsArray}  selectedItems={items} 
-                    itemRenderer={(val, itemProps) => { 
-                        return ( 
-                            <MenuItem 
-                                key={val} 
-                                text={val} 
-                                onClick={(elm) => { 
-                                    setItem(elm.target.textContent); 
-                                    setItems((items) => { 
-                                        return [...items,  
-                                             elm.target.textContent]; 
-                                    }); 
-                                }} 
-                                active={itemProps.modifiers.active} 
-                            /> 
-                        ); 
-                    }} 
-                    onItemSelect={() => { }} 
-                    tagRenderer={(item) => item} 
-                    onRemove={(item) => { 
-                        setItems((items) => items.filter( 
-                           (elm) => elm !== item)); 
-                    }} 
-                    onClear={() => setItems([])} 
-                /> 
-         :
-         null
-         }       
-    </>
-  )
+
+            {type === "multiselect" && (
+                <Multiselect
+                    options={optionsArray}
+                    displayValue="name"
+                    selectedValues={selectedItems}
+                    onSelect={handleSelect}
+                    onRemove={handleRemove}
+                />
+                // <Multiselect
+                //     options={optionsArray}
+                //     displayValue="name"
+                //     onSelect={(selectedList, selectedItem) => handleSelect(selectedItem.id)}
+                //     onRemove={(selectedList, removedItem) => handleRemove(removedItem.id)}
+                // />
+            )}
+        </>
+    )
 }
 
 export default CustomFields

@@ -11271,3 +11271,44 @@ body {
   align-items: center;
   z-index: 50000;
 }
+
+/* Assuming a simple structure with class names like 'multiselect' and 'multiselect-option' */
+.multiselect {
+  position: relative;
+  display: inline-block;
+  width: 200px;
+}
+
+.multiselect-selected {
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.multiselect-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.multiselect-option {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.multiselect-option:hover {
+  background-color: #f0f0f0;
+}
+
+/* Add additional styles as needed */

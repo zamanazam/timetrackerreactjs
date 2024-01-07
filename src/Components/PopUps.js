@@ -1,144 +1,74 @@
 import React, { useState, useEffect } from 'react'
 import { Modal, ModalFooter } from 'react-bootstrap';
+import CustomFields from './CustomFields';
 
 
 function PopUps(props) {
-    const [firstInputValue, setFirstInputValue] = useState('');
-    const [secondInputValue, setSecondInputValue] = useState('');
-    const [isEmailValid, setEmailValid] = useState(true);
-    const [isNameValid, setNameValid] = useState(true);
+    const [inputValues, setInputValues] = useState({});
+    const { inputs, show, title, message, buttontitle, onClose, onClick } = props;
+    const [isValidEmail, setEmailState] = useState(false);
+    const [warning, setWarnings] = useState({});
 
-    useEffect(() => {
-        if (!props) {
-            return null;
-        }
-    }, []);
+    // const handleInputChange = (name, value) => {
+    //     setInputValues((prevValues) => ({ ...prevValues, [name]: value }));
+    // };
 
-    const handleFirstInputChange = (e) => {
-        setFirstInputValue(e.target.value);
-        setNameValid(true);
+    const handleInputChange = (name, value) => {
+        debugger
+        setInputValues((prevValues) => {
+            if (inputs.find(input => input.name === name && input.type === "multiselect")) {
+                return { ...prevValues, [name]: value.map(item => item.id) };
+            } else {
+                return { ...prevValues, [name]: value };
+            }
+        });
     };
 
-    const handleSecondInputChange = (e) => {
-        setSecondInputValue(e.target.value);
-        setEmailValid(true);
+    const handleClick = () => {
+        onClick(inputValues);
     };
-
-
-    const handleClick = (event) => {
-        if (firstInputValue.trim() === "") {
-            setNameValid(false);
-            return false;
-        }
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const isValidEmail = emailRegex.test(secondInputValue);
-
-        if (!isValidEmail && props.secondInputTitle !== "Description") {
-            setEmailValid(false);
-            return false;
-        } else {
-            props.onClick(firstInputValue, secondInputValue);
-            props.onClose(event);
-        }
-    };
-
     return (
 
-        <Modal show={props.show} onHide={props.onClose}>
-            <Modal.Header closeButton>
-                <Modal.Title>
-                    {props.title}
-                </Modal.Title>
-            </Modal.Header>
-
-            <Modal.Body>
-                {props.message != null
-                    ?
-                    <strong>{props.message}</strong>
-                    :
-                    <>
-                        <form>
-                            <div className="mb-3">
-                                <label htmlFor="recipient-name" className="col-form-label">{props.firstInputTitle}</label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    id="recipient-name"
-                                    value={firstInputValue}
-                                    onChange={handleFirstInputChange}
-                                />
-                                {!isNameValid && (
-                                    <p className='text-danger mt-1 small'>Enter Name</p>
-                                )}
-                            </div>
-                            <div className="mb-3">
-                                <label htmlFor="message-text" className="col-form-label">{props.secondInputTitle}</label>
-                                {props.secondInputTitle === "Description"
-                                    ?
-                                    <textarea className="form-control"
-                                        id="message-text"
-                                        value={secondInputValue}
-                                        onChange={handleSecondInputChange}>
-                                    </textarea>
-                                    :
-                                    <>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            id="message-text"
-                                            value={secondInputValue}
-                                            onChange={handleSecondInputChange}
-                                        />
-                                        {!isEmailValid && (
-                                            <p className='text-danger mt-1 small'>Enter a valid email</p>
-                                        )}
-                                    </>
-                                }
-                            </div>
-
-                            <div className="mb-3">
-                                <label htmlFor="message-text" className="col-form-label">{props.thirdInputTitle}</label>
-                                {props.thirdInputTitle === "Description" ? (
-                                    <textarea
-                                        className="form-control"
-                                        id="message-text"
-                                        value={secondInputValue}
-                                        onChange={handleSecondInputChange}
-                                    ></textarea>
-                                ) : props.thirdInputTitle === "multiselect" ? (
-                                    // Your multiselect component goes here
-                                    // For example:
-                                    <MultiselectComponent
-                                        options={multiselectOptions}
-                                        selectedValues={selectedMultiselectValues}
-                                        onChange={handleMultiselectChange}
-                                    />
-                                ) : (
-                                    <>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            id="message-text"
-                                            value={secondInputValue}
-                                            onChange={handleSecondInputChange}
-                                        />
-                                        {!isEmailValid && (
-                                            <p className='text-danger mt-1 small'>Enter a valid email</p>
-                                        )}
-                                    </>
-                                )}
-
-                            </div>
-                        </form>
-                    </>
-                }
-            </Modal.Body>
-            <ModalFooter>
-                <span className="btn btn-secondary" onClick={props.onClose}>Close</span>
-                <span className="btn btn-primary" onClick={(e) => handleClick(e)}>{props.buttontitle}</span>
-            </ModalFooter>
+        <Modal show={show} onHide={onClose}>
+            <form onSubmit={(e) => handleClick(e)}>
+                <div className='card border-0'>
+                    <div className='card-header bg-transparent'>
+                        <h5 className='float-start'>{title}</h5>
+                        <button type="button" className="btn-close float-end" data-bs-dismiss="modal" aria-label="Close" onClick={onClose}>
+                            <span aria-hidden="true"></span>
+                        </button>
+                    </div>
+                    <div className='card-body'>
+                        {inputs &&
+                            inputs.map((input, index) => (
+                                <div key={index}>
+                                    <label>{input.InputTitle}</label>
+                                    <CustomFields
+                                        key={index}
+                                        classField={input.classField}
+                                        type={input.type}
+                                        placeholder={input.placeholder}
+                                        onChange={e => setInputValues({ ...inputValues, [input.name]: e.target.value })}
+                                        value={inputValues[input.name] || ''}
+                                        name={input.name}
+                                        optionsArray={input.type === "multiselect" ? input.optionsArray : null}
+                                        hideOption={input.hideOption || null}
+                                        {...input} />
+                                    {!isValidEmail && <label htmlFor={warning.name}>{warning.message}</label>}
+                                </div>
+                            ))}
+                        {message &&
+                            <strong>{message}</strong>
+                        }
+                    </div>
+                    <div className='card-footer bg-transparent'>
+                        <button type="submit" className="btn btn-primary float-end">
+                            {buttontitle}
+                        </button>
+                    </div>
+                </div>
+            </form>
         </Modal>
     )
 }
-
-export default PopUps
+export default PopUps;

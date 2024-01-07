@@ -28,11 +28,11 @@ const Companies = () => {
     const CompanyDetail = (id) => {
         navigate('/Detail/' + id);
     };
-    const saveCompany = (firstInputValue, secondInputValue) => {
+    const saveCompany = (inputsFromPopUp) => {
         const AddCompanyDTO = {
-            CompanyName: firstInputValue,
-            CompanyEmail: secondInputValue
-        }
+            CompanyName: inputsFromPopUp.Name,
+            CompanyEmail:inputsFromPopUp.Email
+        };
         let url = apiUrl + '/Company/AddNewCompany';
         fetch(url, {
             method: 'POST',
@@ -90,25 +90,30 @@ const Companies = () => {
             <div className="container-fluid px-4">
                 {popupProps && (
                     <PopUps
+                        inputs={popupProps.inputs||null}
                         show={popupProps.show}
-                        title={popupProps.title}
-                        message={popupProps.message}
-                        firstInputTitle={popupProps.firstInputTitle}
-                        secondInputTitle={popupProps.secondInputTitle}
-                        buttontitle={popupProps.buttontitle}
+                        title={popupProps.title || null}
+                        message={popupProps.message || null}
+                        buttontitle={popupProps.buttontitle || null}
                         onClose={closePopup}
-                        onClick={popupProps.onClick} />)}
+                        onClick={saveCompany} />)}
                 {isLoading && <LoadingSpinner />}
                 <h1 className="mt-4">Companies</h1>
                 <div className="row mb-4">
                     <div>
-                        <button type="button" className="btn btn-warning float-end" onClick={() => openPopup({
-                            show: true, title: "Create Company",
-                            firstInputTitle: 'Name',
-                            secondInputTitle: 'Email',
-                            buttontitle: 'Save',
-                            onClick: saveCompany
-                        })}>
+                        <button type="button" className="btn btn-warning float-end"   
+                        onClick={() => openPopup({
+                                        inputs: [
+                                            { name:'Name', InputTitle: 'Name',classField:'form-control mb-4', placeholder : 'Name', type: 'text'},
+                                            { name:'Email', InputTitle: 'Email',classField:'form-control mb-2', placeholder : 'Email', type: 'text' },
+                                        ],
+                                        show: true,
+                                        title: 'Create Company',
+                                        buttontitle: 'Save',
+                                        onClick: saveCompany,
+                                    })
+                                }>
+
                             <span className="me-2">
                                 <i className="fa fa-plus"></i>
                             </span>Company
