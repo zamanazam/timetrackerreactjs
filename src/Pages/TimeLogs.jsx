@@ -6,6 +6,9 @@ import CustomFields from "../Components/CustomFields";
 import Alert from "../Components/Alert";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import PopUps from "../Components/PopUps";
+import { DateRangePicker } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
 
 function ProjectTimeLogs() {
     const [TimeLogsData, setTimeLogsData] = useState(null);
@@ -14,6 +17,7 @@ function ProjectTimeLogs() {
     const currentRoleId = sessionStorage.getItem('RoleId');
     const currentUserId = sessionStorage.getItem('UserId');
     //const [formInput, updateFormInput] = useState({});
+    const [datePickerVisible, setDatePickerVisible] = useState(false);
     const [formInput, setFormInput] = useState({
         id: null,
         hours: '',
@@ -23,14 +27,25 @@ function ProjectTimeLogs() {
     const [isLoading, setIsLoading] = useState(true);
     const [alert, setAlert] = useState(null);
     const [popupProps, setPopupProps] = useState(null);
-
-
+  
     useEffect(() => {
         GetTimeLogs();
     }, []);
+    
+    const [dateRange, setDateRange] = useState([
+        {
+          startDate: new Date(),
+          endDate: new Date(),
+          key: 'selection',
+        },
+      ]);
 
-
+      const handleSelect = (ranges) => {
+        setDateRange([ranges.selection]);
+        setDatePickerVisible(false);
+      };
     function GetTimeLogs(page = 1) {
+        debugger
         setIsLoading(true);
         var EmployeeId = null;
         var UserId = null;
@@ -39,13 +54,14 @@ function ProjectTimeLogs() {
         var firstDay = new Date(date.getFullYear(), date.getMonth() - 3, 0);
         var lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
         if (currentRoleId != EmployeeRoleId) {
-            if (AssigneeId == undefined) {
+            if (AssigneeId == 'undefined') {
                 if (currentRoleId == SuperAdminRoleId) {
                     EmployeeId = null;
                 } else {
                     EmployeeId = currentUserId;
                 }
             } else {
+                debugger
                 //if (AssigneeId == 'null' || AssigneeId == '0')
                 EmployeeId = AssigneeId;
             }
@@ -63,6 +79,7 @@ function ProjectTimeLogs() {
             'UserId': UserId,
             'CRoleId': currentRoleId
         }
+        debugger
         const url = new URL(apiUrl + '/ProjectTimeLogs/GetTimeLogbyConditions');
         fetch(url, {
             method: 'POST',
@@ -262,7 +279,9 @@ function ProjectTimeLogs() {
                 setAlert({ type: 'danger', msg: error.message});
             });
     }
-
+    const handleInputChange = (e) => {
+        // Handle input change if needed
+      };
     return (
         <>
             {popupProps && (
@@ -296,7 +315,20 @@ function ProjectTimeLogs() {
                                             </label>
                                         </div>
                                         <div className="datatable-search">
-                                            <input type="text" className="datatable-input" placeholder="Search" />
+                                            <input
+                                                    type="text"
+                                                    id="datePickerInput"
+                                                    placeholder="Select Date Range"
+                                                    className="form-control"
+                                                    value={`${dateRange[0].startDate.toDateString()} - ${dateRange[0].endDate.toDateString()}`}
+                                                    onChange={handleInputChange} 
+                                                    onClick={() => setDatePickerVisible(true)}
+                                                />
+                                                {datePickerVisible && (
+                                                    <div className="mt-4 ml-4">
+                                                    <DateRangePicker ranges={dateRange} onChange={handleSelect} />
+                                                    </div>
+                                                )}
                                         </div>
                                     </div>
                                     <div className="datatable-container">
@@ -321,7 +353,20 @@ function ProjectTimeLogs() {
                                                         <td className="text-center">{Log.timeLogText}</td>
                                                         <td className="text-center">{Log.hours}</td>
                                                         <td className="text-center">{Log.sendOn}</td>
-                                                        <td className="text-center">{Log.isApproved == 1 ? <i className="bi bi-check-lg"></i> : ''}</td>
+                                                        <td className="text-center">
+                                                            {Log.isApproved == 1 && <a className="text-center" title="Approved"><i className="fa fa-check" style={{ fontsize: '30px', color: 'green' }}></i></a>}
+                                                            {Log.isRejected == 1 && <a href="#" title="Rejected"
+                                                                onClick={() => showDeletTimeLogsModal({
+                                                                     inputs: [],
+                                                                     customId: Log.timeLogsId,
+                                                                     message: Log.rejectedComment,
+                                                                     show: true,
+                                                                     title: 'Rejected Comment',
+                                                                     buttontitle: 'Cancel',
+                                                                     onClick: closePopup,
+                                                                })}><i className="fa fa-warning" style={{ fontsize: '20px', color: 'red' }}></i></a>}
+                                                            {Log.isApproved == 0 && Log.isRejected == 0 && <a href="#" title="NotApproved/NotRejected"></a>}
+                                                        </td>
                                                     </tr>
                                                 ))}
                                                 {!TimeLogsData &&
@@ -439,9 +484,9 @@ function ProjectTimeLogs() {
                                                             <td className="text-center">{Log.hours}</td>
                                                             <td className="text-center">{Log.sendOn}</td>
                                                             <td className="text-center">
-                                                                    {Log.isApproved == 0 && Log.isRejected == 0 && null}    
-                                                                    {Log.isRejected == 1 && <a className="text-center"><i className="fa fa-warning" style={{ fontsize: '30px', color: 'red' }}></i></a>}
-                                                                    {Log.isApproved == 1 && <a className="text-center"><i className="fa fa-check" style={{ fontsize: '30px', color: 'green' }}></i></a>}
+                                                                    {Log.isApproved == 0 && Log.isRejected == 0 && <a title="NotApproved/NotRejected"></a>}    
+                                                                    {Log.isRejected == 1 && <a className="text-center" title="Approved"><i className="fa fa-warning" style={{ fontsize: '30px', color: 'red' }}></i></a>}
+                                                                    {Log.isApproved == 1 && <a className="text-center" title="Rejected"><i className="fa fa-check" style={{ fontsize: '30px', color: 'green' }}></i></a>}
                                                             </td>
                                                         </tr>
                                                     ))
