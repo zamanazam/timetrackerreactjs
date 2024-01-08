@@ -99,12 +99,10 @@ export default function CreateAccount() {
                 headers: headers,
                 body: JSON.stringify(AddUserDTO)
             };
-            debugger
             const response = await fetch(url, options);
             const data = await response.json();
             setIsLoading(false);
             console.log('res',data);
-            debugger
             if(data.statusCode ==200){
                 setAlert({ type: 'success', msg: 'User created successfully!' });
             }else{

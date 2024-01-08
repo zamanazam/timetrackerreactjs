@@ -22,43 +22,31 @@ function CustomFields({ name, classField, type, placeholder, onChange, value, op
 
     return (
         <>
-            {type == "text"
-                ?
+            {type == "text" &&
                 <input name={name} className={classField} required type={type} placeholder={placeholder} defaultValue={value} onChange={onChange} />
-                :
-                null
             }
 
-            {type == "email"
-                ?
+            {type == "number" && 
+                 <input name={name} className={classField} required type={type} placeholder={placeholder} defaultValue={value} onChange={onChange} />
+            }
+
+            {type == "email" &&
                 <input name={name} className={classField} type={type} placeholder={placeholder} defaultValue={value} onChange={onChange} pattern="^.+@.+\..+$" title='Please enter a valid email address' />
-                :
-                null
             }
 
-            {type == "password"
-                ?
+            {type == "password" &&
                 <input name={name} className={classField} type={type} placeholder={placeholder} defaultValue={value} onChange={onChange} />
-                :
-                null
             }
 
-            {type == "checkbox"
-                ?
+            {type == "checkbox" &&
                 <input name={name} className={classField} type={type} placeholder={placeholder} defaultValue={value} onChange={onChange} />
-                :
-                null
             }
 
-            {type == "textarea"
-                ?
+            {type == "textarea" &&
                 <textarea name={name} className={classField} type={type} placeholder={placeholder} defaultValue={value} onChange={onChange} ></textarea>
-                :
-                null
             }
 
-            {type == "select"
-                ?
+            {type == "select" &&
                 <select name={name} className={classField} type={type} placeholder={placeholder} value={value} onChange={onChange}>
                     {optionsArray.filter(option => option.id != hideOption)
                         .map((option, index) => (
@@ -68,8 +56,7 @@ function CustomFields({ name, classField, type, placeholder, onChange, value, op
                         ))
                     }
                 </select>
-                :
-                null}
+            }
 
 
             {type === "multiselect" && (

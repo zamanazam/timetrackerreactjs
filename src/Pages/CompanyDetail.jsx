@@ -58,7 +58,7 @@ const CompanyDetail = () => {
                 setIsLoading(false);
             })
             .catch((error) => {
-                setAlert({ type: 'Error', msg: error.message });
+                setAlert({ type: 'danger', msg: error.message });
             });
     };
 
