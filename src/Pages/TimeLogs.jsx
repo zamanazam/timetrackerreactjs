@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { apiUrl, SuperAdminRoleId, AdminRoleId, EmployeeRoleId, ClientRoleId,paginationArray } from "../GlobalFile";
+
+import { apiUrl, SuperAdminRoleId, AdminRoleId, EmployeeRoleId, ClientRoleId, paginationArray, getPagesTags, getEntriesOfPagination, getStartPointOfPagination } from "../GlobalFile";
+
 import { useParams } from "react-router-dom";
 import CustomButton from "../Components/CustomButton";
 import CustomFields from "../Components/CustomFields";
@@ -10,7 +12,7 @@ import { DateRangePicker } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 
-const ProjectTimeLogs = () =>{
+const ProjectTimeLogs = () => {
     const [TimeLogsData, setTimeLogsData] = useState([]);
     const { projectId, AssigneeId } = useParams();
     const [toUpdate, setUpdateButton] = useState(false);
@@ -18,36 +20,36 @@ const ProjectTimeLogs = () =>{
     const currentUserId = sessionStorage.getItem('UserId');
     const [datePickerVisible, setDatePickerVisible] = useState(false);
     const [formInput, setFormInput] = useState({
-                                                    id: null,
-                                                    hours: '',
-                                                    description: '',
-                                                    startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-                                                    endDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0),     
-                                                    employeeName: ''
-                                                });
+        id: null,
+        hours: '',
+        description: '',
+        startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+        endDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0),
+        employeeName: ''
+    });
     const token = sessionStorage.getItem('Token');
     const [isLoading, setIsLoading] = useState(true);
     const [alert, setAlert] = useState(null);
     const [popupProps, setPopupProps] = useState(null);
     const [projectAssigneeId, setProjectAssigneeId] = useState(0);
-    const [dateRange, setDateRange] = useState({startDate: new Date(), endDate: new Date()});
-    const [pagination ,setPagination]= useState({
-                                                    Page: 1,
-                                                    PageSize:10,
-                                                    Total:10,
-                                                    TotalPages:1
-                                                });
+    const [dateRange, setDateRange] = useState({ startDate: new Date(), endDate: new Date() });
+    const [pagination, setPagination] = useState({
+        Page: 1,
+        PageSize: 10,
+        Total: 10,
+        TotalPages: 1
+    });
 
     const handleDateRange = async (ranges) => {
         setDatePickerVisible(false);
-            setFormInput(prevFormInput => ({
-                ...prevFormInput,
-                startDate: ranges.startDate,
-                endDate: ranges.endDate
-            }))
+        setFormInput(prevFormInput => ({
+            ...prevFormInput,
+            startDate: ranges.startDate,
+            endDate: ranges.endDate
+        }))
     };
-    
-    const GetTimeLogs= async()=> {
+
+    const GetTimeLogs = async () => {
         setIsLoading(true);
         var EmployeeId = null;
         var UserId = null;
@@ -56,56 +58,58 @@ const ProjectTimeLogs = () =>{
 
         EmployeeId = AssigneeId;
         setProjectAssigneeId(AssigneeId);
-        if(currentRoleId == AdminRoleId && AssigneeId == 'undefined'){
+        if (currentRoleId == AdminRoleId && AssigneeId == 'undefined') {
             EmployeeId = currentUserId;
             setProjectAssigneeId(currentUserId);
         }
 
-        if(currentRoleId == EmployeeRoleId){
+        if (currentRoleId == EmployeeRoleId) {
             UserId = currentUserId;
-            setProjectAssigneeId(currentUserId);  
+            setProjectAssigneeId(currentUserId);
         }
 
-        if(EmployeeId == 'undefined')
-         EmployeeId = null;
+        if (EmployeeId == 'undefined')
+            EmployeeId = null;
 
-        if(formInput?.employeeName != '')
+        if (formInput?.employeeName != '')
             EmployeeId = null;
 
         var TimeLogsuserProjectDTo = {
             'DateFrom': firstDate,
             'DateTo': lastDate,
-            'EmployeeId': EmployeeId ,
+            'EmployeeId': EmployeeId,
             'Page': parseInt(pagination.Page, 10),
             'PageSize': parseInt(pagination.PageSize, 10),
             'ProjectId': projectId,
             'UserId': UserId,
             'CRoleId': currentRoleId,
-            'EmployeeName' : formInput?.employeeName
+            'EmployeeName': formInput?.employeeName
         }
-        debugger
-        console.log('user',TimeLogsuserProjectDTo);
         const url = new URL(apiUrl + '/ProjectTimeLogs/GetTimeLogbyConditions');
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(TimeLogsuserProjectDTo)
-            });
-            const data = await response.json();
-            console.log('logs', data);
-
-            setTimeLogsData(data.results);
-            setIsLoading(false);
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(TimeLogsuserProjectDTo)
+        });
+        const data = await response.json();
+        setPagination({
+            Page: data?.page,
+            PageSize: data?.pageSize,
+            Total: data?.total,
+            TotalPages: data?.totalPages
+        })
+        setTimeLogsData(data.results);
+        setIsLoading(false);
     };
 
-    
+
     useEffect(() => {
         GetTimeLogs();
-    }, [formInput?.startDate,formInput?.endDate,formInput?.employeeName,pagination.Page,pagination.PageSize]);
+    }, [formInput?.startDate, formInput?.endDate, formInput?.employeeName, pagination.Page, pagination.PageSize]);
 
     const CreateTimeLog = () => {
         setIsLoading(true);
@@ -306,8 +310,7 @@ const ProjectTimeLogs = () =>{
 
             <div className="container">
                 <h1 className="mt-4 mb-2">Project TimeLogs</h1>
-                {currentUserId == projectAssigneeId 
-                &&
+                {currentUserId == projectAssigneeId&&
                     <div className="row bg-light pb-3 pt-2 rounded-3">
                         <div className="col-lg-2 col-md-6 col-sm-12">
                             <label>Hours</label>
@@ -327,12 +330,11 @@ const ProjectTimeLogs = () =>{
                         </div>
                     </div>
                 }
-                {(currentRoleId == ClientRoleId 
-                || currentRoleId == SuperAdminRoleId) 
-                &&
+                {(currentRoleId == ClientRoleId || currentRoleId == SuperAdminRoleId)
+                    &&
                     <div className="row mt-4 mb-4">
                         <div className="col-xl-6 col-lg-6 col-md-6 col-sm-12">
-                                <CustomFields  name="Assignees" InputTitle= 'Employees' classField='form-control mb-2 w-50' value={formInput?.employeeName} placeholder='Employees' type='text' onChange={(e)=>updateFormInput({employeeName:e.target.value})} ></CustomFields>
+                            <CustomFields name="Assignees" InputTitle='Employees' classField='form-control mb-2 w-50' value={formInput?.employeeName} placeholder='Employees' type='text' onChange={(e) => updateFormInput({ ...formInput, employeeName: e.target.value })} ></CustomFields>
                         </div>
                         {showButtons && (
                             <div className="col-xl-6 col-lg-6 col-md-6 col-sm-12">
@@ -362,39 +364,39 @@ const ProjectTimeLogs = () =>{
                                     <div className="datatable-dropdown">
                                         <label>
                                             <CustomFields type="select" classField="datatable-selector"
-                                            value={pagination.Page} onChange={(e)=>setPagination({...pagination,Page:e.target.value})} optionsArray={paginationArray}></CustomFields>
+                                                value={pagination.PageSize} onChange={(e) => setPagination({ ...pagination, PageSize: e.target.value, Page: 1 })} optionsArray={paginationArray}></CustomFields>
                                         </label>
                                     </div>
                                     <div className="datatable-search position-absolute end-0 me-4" style={{ zIndex: '100' }}>
-                                    <input
-                                        type="text"
-                                        id="datePickerInput"
-                                        placeholder="Select Date Range"
-                                        className="form-control text-center"
-                                        value={`${formatDate(formInput?.startDate)} - ${formatDate(formInput?.endDate)}`}
-                                        onChange={() => {}}
-                                        onClick={() => setDatePickerVisible(true)}
+                                        <input
+                                            type="text"
+                                            id="datePickerInput"
+                                            placeholder="Select Date Range"
+                                            className="form-control text-center"
+                                            value={`${formatDate(formInput?.startDate)} - ${formatDate(formInput?.endDate)}`}
+                                            onChange={() => { }}
+                                            onClick={() => setDatePickerVisible(true)}
                                         />
                                         {datePickerVisible && (
-                                        <div className="mt-1 ml-4" >
-                                            <DateRangePicker
-                                            ranges={[dateRange]}
-                                            calendarAriaLabel="Toggle calendar"
-                                            clearAriaLabel="Clear value"
-                                            dayAriaLabel="Day"
-                                            monthAriaLabel="Month"
-                                            nativeInputAriaLabel="Date"
-                                            yearAriaLabel="Year"
-                                            value={dateRange}
-                                            format="dd-MM-yyyy"
-                                            className="border rounded-2"
-                                            onChange={(selected) => {
-                                                const { range1 } = selected;
-                                                const { startDate, endDate } = range1;                                            
-                                                handleDateRange(range1);
-                                            }}
-                                            />
-                                        </div>
+                                            <div className="mt-1 ml-4" >
+                                                <DateRangePicker
+                                                    ranges={[dateRange]}
+                                                    calendarAriaLabel="Toggle calendar"
+                                                    clearAriaLabel="Clear value"
+                                                    dayAriaLabel="Day"
+                                                    monthAriaLabel="Month"
+                                                    nativeInputAriaLabel="Date"
+                                                    yearAriaLabel="Year"
+                                                    value={dateRange}
+                                                    format="dd-MM-yyyy"
+                                                    className="border rounded-2"
+                                                    onChange={(selected) => {
+                                                        const { range1 } = selected;
+                                                        const { startDate, endDate } = range1;
+                                                        handleDateRange(range1);
+                                                    }}
+                                                />
+                                            </div>
                                         )}
                                     </div>
                                 </div>
@@ -403,6 +405,7 @@ const ProjectTimeLogs = () =>{
                                         <table id="datatablesSimple" className="datatable-table">
                                             <thead>
                                                 <tr>
+                                                    <th className="text-center">Sr</th>
                                                     <th className="text-center">Company</th>
                                                     <th className="text-center">Employee</th>
                                                     <th className="text-center">LogText</th>
@@ -413,14 +416,17 @@ const ProjectTimeLogs = () =>{
                                             </thead>
                                             <tbody>
 
-                                                {TimeLogsData.length > 0  && TimeLogsData.map((Log, index) => (
+                                                {TimeLogsData.length > 0 && TimeLogsData.map((Log, index) => (
                                                     <tr key={index}>
+                                                        <td className="text-center">
+                                                            {getStartPointOfPagination(pagination.PageSize, pagination.Page) + index}
+                                                        </td>
                                                         <td className="text-center">{Log.company}</td>
                                                         <td className="text-center">{Log.employee}</td>
                                                         <td className="text-center">{Log.timeLogText}</td>
                                                         <td className="text-center">{Log.hours}</td>
                                                         <td className="text-center">
-                                                        {new Date(Log.sendOn).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric',hour: 'numeric',minute: 'numeric',hour12: true })}
+                                                            {new Date(Log.sendOn).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true })}
                                                         </td>
                                                         <td className="text-center">
                                                             {Log.isApproved == 1 && <a className="text-center" title="Approved"><i className="fa fa-check" style={{ fontsize: '30px', color: 'green' }}></i></a>}
@@ -438,7 +444,7 @@ const ProjectTimeLogs = () =>{
                                                         </td>
                                                     </tr>
                                                 ))}
-                                                {   TimeLogsData == 0 &&
+                                                {TimeLogsData == 0 &&
                                                     <tr>
                                                         <td colSpan={6} align="center">No Data Found</td>
                                                     </tr>}
@@ -463,7 +469,7 @@ const ProjectTimeLogs = () =>{
                                             </thead>
                                             <tbody>
 
-                                                {TimeLogsData.length > 0 && 
+                                                {TimeLogsData.length > 0 &&
                                                     TimeLogsData.map((Log, index) => (
                                                         <tr key={index}>
                                                             <th><input type="checkbox" className="form-check-input" style={{ height: '15px', width: '15px' }} checked={selectedRows.includes(index)} onChange={() => handleCheckboxChange(index)} /></th>
@@ -472,7 +478,7 @@ const ProjectTimeLogs = () =>{
                                                             <td className="text-center">{Log.timeLogText}</td>
                                                             <td className="text-center">{Log.hours}</td>
                                                             <td className="text-center">
-                                                                {new Date(Log.sendOn).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric',hour: 'numeric',minute: 'numeric',hour12: true })}
+                                                                {new Date(Log.sendOn).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true })}
                                                             </td>
                                                             <td className="text-center">
                                                                 {Log.isApproved == 0 && Log.isRejected == 0 && <a title="NotApproved/NotRejected"></a>}
@@ -481,7 +487,7 @@ const ProjectTimeLogs = () =>{
                                                             </td>
                                                         </tr>
                                                     ))}
-                                                    {TimeLogsData.length == 0 && <tr><td colSpan={7} align="center">No Data Found</td></tr>}
+                                                {TimeLogsData.length == 0 && <tr><td colSpan={7} align="center">No Data Found</td></tr>}
                                             </tbody>
                                         </table>
                                     </div>
@@ -492,6 +498,7 @@ const ProjectTimeLogs = () =>{
                                         <table id="datatablesSimple" className="datatable-table">
                                             <thead>
                                                 <tr>
+                                                    <th className="text-center">Company</th>
                                                     <th className="text-center">Company</th>
                                                     <th className="text-center">Employee</th>
                                                     <th className="text-center">LogText</th>
@@ -510,7 +517,7 @@ const ProjectTimeLogs = () =>{
                                                         <td className="text-center">{Log.timeLogText}</td>
                                                         <td className="text-center">{Log.hours}</td>
                                                         <td className="text-center">
-                                                        {new Date(Log.sendOn).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric',hour: 'numeric',minute: 'numeric',hour12: true })}
+                                                            {new Date(Log.sendOn).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true })}
                                                         </td>
                                                         <td className="text-center">
                                                             {Log.isApproved == 1 && <a href="#" title="Approved"><i className="fa fa-check" style={{ fontsize: '20px', color: 'green' }}></i></a>}
@@ -542,44 +549,37 @@ const ProjectTimeLogs = () =>{
                                                             </td>}
                                                     </tr>
                                                 ))}
-                                                {TimeLogsData.length == 0 && <tr><td colSpan={currentUserId == projectAssigneeId ? 7: 6} align="center">No Data Found</td></tr>}
+                                                {TimeLogsData.length == 0 && <tr><td colSpan={currentUserId == projectAssigneeId ? 7 : 6} align="center">No Data Found</td></tr>}
                                             </tbody>
                                         </table>
                                     </div>
                                 }
                                 <div className="datatable-bottom">
-                                    <div className="datatable-info">Showing 1 to 10 of 57 entries</div>
+                                    <div className="datatable-info">
+                                        Showing {getStartPointOfPagination(pagination.PageSize, pagination.Page)} to {getEntriesOfPagination(pagination.PageSize, pagination.Page, pagination.Total)} of {pagination.Total} entries
+                                    </div>
                                     <nav className="datatable-pagination">
                                         <ul className="datatable-pagination-list">
-                                            <li className="datatable-pagination-list-item datatable-hidden datatable-disabled">
-                                                <a data-page="1" className="datatable-pagination-list-item-link">
+                                            <li className={`datatable-pagination-list-item ${pagination.Page === 1 ? 'datatable-disabled datatable-hidden' : ''}`}>
+                                                <a data-page="1" href="#" onClick={() => setPagination({ ...pagination, Page: pagination.Page - 1 })} className="datatable-pagination-list-item-link">
                                                     <i className="fas fa-angle-left"></i>
                                                 </a>
                                             </li>
-                                            <li className="datatable-pagination-list-item datatable-active">
-                                                <a data-page="1" className="datatable-pagination-list-item-link">1</a>
-                                            </li>
-                                            <li className="datatable-pagination-list-item">
-                                                <a data-page="2" className="datatable-pagination-list-item-link">2</a>
-                                            </li>
-                                            <li className="datatable-pagination-list-item">
-                                                <a data-page="3" className="datatable-pagination-list-item-link">3</a>
-                                            </li>
-                                            <li className="datatable-pagination-list-item">
-                                                <a data-page="4" className="datatable-pagination-list-item-link">4</a>
-                                            </li>
-                                            <li className="datatable-pagination-list-item">
-                                                <a data-page="5" className="datatable-pagination-list-item-link">5</a>
-                                            </li>
-                                            <li className="datatable-pagination-list-item">
-                                                <a data-page="2" className="datatable-pagination-list-item-link">
+                                            {getPagesTags(pagination.TotalPages).length > 0 && getPagesTags(pagination.TotalPages).map((result, key) => (
+                                                <li className={`datatable-pagination-list-item ${pagination.Page == result ? 'datatable-active' : ''}`}
+                                                    onClick={() => setPagination({ ...pagination, Page: result })} key={key}>
+                                                    <a data-page={result} className="datatable-pagination-list-item-link text-decoration-none">{result}</a>
+                                                </li>
+                                            ))}
+
+                                            <li className={`datatable-pagination-list-item ${pagination.Page === pagination.TotalPages ? 'datatable-disabled' : ''}`}>
+                                                <a data-page="2" href="#" onClick={() => setPagination({ ...pagination, Page: pagination.Page + 1 })} className="datatable-pagination-list-item-link">
                                                     <i className="fas fa-angle-right"></i>
                                                 </a>
                                             </li>
                                         </ul>
                                     </nav>
                                 </div>
-
                             </div>
                         </div>
                     </div>
