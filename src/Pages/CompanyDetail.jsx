@@ -197,8 +197,8 @@ const CompanyDetail = () => {
                         <button type="button" href="#" className="btn btn-warning mt-4 float-end me-2"
                             onClick={() => openPopup({
                                 inputs: [
-                                    { name:'Name', InputTitle: 'Name',classField:'form-control mb-4', placeholder : 'Name', type: 'text'},
-                                    { name:'Description', InputTitle: 'Description',classField:'form-control mb-2', placeholder : 'Description', type: 'textarea' },
+                                    { name:'Name', InputTitle: 'Name',classField:'form-control mb-2', type: 'text'},
+                                    { name:'Description', InputTitle: 'Description',classField:'form-control mb-2', type: 'textarea' },
                                 ],
                                 show: true,
                                 title: 'Create Project',

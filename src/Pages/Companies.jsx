@@ -104,8 +104,8 @@ const Companies = () => {
                         <button type="button" className="btn btn-warning float-end"   
                         onClick={() => openPopup({
                                         inputs: [
-                                            { name:'Name', InputTitle: 'Name',classField:'form-control mb-4', placeholder : 'Name', type: 'text'},
-                                            { name:'Email', InputTitle: 'Email',classField:'form-control mb-2', placeholder : 'Email', type: 'text' },
+                                            { name:'Name', InputTitle: 'Name',classField:'form-control mb-2', type: 'text'},
+                                            { name:'Email', InputTitle: 'Email',classField:'form-control mb-2', type: 'text' },
                                         ],
                                         show: true,
                                         title: 'Create Company',

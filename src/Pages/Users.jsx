@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffectOnce } from "../useEffectOnce";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import Alert from "../Components/Alert";
-
+import PopUps from "../Components/PopUps";
 
 function Users({ changeLoaderState }) {
     const navigate = useNavigate();
@@ -13,6 +13,15 @@ function Users({ changeLoaderState }) {
 
     const [isLoading, setIsLoading] = useState(false);
     const [alert, setAlert] = useState(null);
+    const [popupProps, setPopupProps] = useState(null);
+
+    const showPopUp = (props)=>{
+        setPopupProps(props);
+    }
+    const closePopup = () => {
+        setPopupProps(null);
+    };
+
 
     const getUsers = (Page = 1) => {
         setIsLoading(true)
@@ -49,17 +58,54 @@ function Users({ changeLoaderState }) {
         getUsers();
     }, []);
 
+    const updateUser = (id,status= false)=>{
+        const token = sessionStorage.getItem('Token');
+        const url = new URL(apiUrl + '/Admin/UpdateUserStatus');
+
+        var newStatus = status == true ? 1 : 0;
+
+        let UpdateUserStatusDTO ={
+            Id:id,
+            Status:newStatus
+        }
+        fetch(url,{
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(UpdateUserStatusDTO)
+        }).then((response) => response.json())
+        .then((data) => {
+            closePopup();
+            setAlert({type: 'success', msg: "Company saved successfully!" });
+            getUsers();
+        })
+        .catch((error) => {
+            setIsLoading(false);
+            setAlert({type:'danger',msg:'Status updating failed!'});
+        });
+    }
 
     const createAccount = ()=>{
-        debugger
         navigate("/createAccount");
     }
 
     return (
         <>
-            {alert && <Alert type={alert.type} message={alert.msg} />}
+        {popupProps && (
+                <PopUps
+                    inputs={popupProps.inputs || null}
+                    show={popupProps.show}
+                    title={popupProps.title || null}
+                    message={popupProps.message || null}
+                    buttontitle={popupProps.buttontitle || null}
+                    onClose={closePopup}
+                    onClick={popupProps.onClick} />)}
+                {alert && <Alert type={alert.type} message={alert.msg} />}
             <div className="container">
-                {isLoading && <LoadingSpinner />}
+                    {isLoading && <LoadingSpinner />}
                 <h1 className="mt-4">Users</h1>
                 <div className="row mb-4">
                     <div>
@@ -111,8 +157,24 @@ function Users({ changeLoaderState }) {
                                                     <td className="text-center">
                                                         {
                                                             User.isActive == true
-                                                                ? <a className="btn btn-group text-success"><i className="fas fa-toggle-on h5"></i></a>
-                                                                : <a className="btn btn-group text-secondary"><i className="fas fa-toggle-off h5"></i></a>
+                                                                ? <a className="btn btn-group text-success" onClick={()=>showPopUp({
+                                                                    inputs : [],
+                                                                    show : true,
+                                                                    title : 'Create Company',
+                                                                    message : 'Do you want to block this user?',
+                                                                    buttontitle : 'Save',
+                                                                    onClick : ()=>updateUser(User.id,false)
+                                                                })
+                                                            }><i className="fas fa-toggle-on h5"></i></a>
+                                                                : <a className="btn btn-group text-secondary" onClick={()=>showPopUp({
+                                                                    inputs: [],
+                                                                    show: true,
+                                                                    title: 'Create Company',
+                                                                    message:'Do you want to Un-block this user?',
+                                                                    buttontitle: 'Save',
+                                                                    onClick : ()=>updateUser(User.id,true),
+                                                                })
+                                                            }><i className="fas fa-toggle-off h5"></i></a>
                                                         }
 
                                                         <a href="#" className="btn-outline-warning h5 bg-transparent"><i className="fa fa-pencil"></i></a>

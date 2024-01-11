@@ -101,7 +101,7 @@ function Projects() {
                                             <div className="card-footer d-lg-inline-flex">
                                                 <a className="float-start" title="Edit" target="_self" href="#" onClick={() => projectDetail(project.projectId)}><span><i className="fa fa-solid fa-pencil" style={{fontsize:'24px', color:'darkgoldenrod'}}></i></span></a>
                                                 <p className="text-center ms-auto">{new Date(project.createdOn).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
-                                                <a className="float-end ms-auto" href="#" title="TimeLogs" onClick={()=> projectTimeLogs(project.projectId,0)}><span><i className="fa fa-solid fa-list" style={{fontsize:'24px'}}></i></span></a>                                                
+                                                <a className="float-end ms-auto" href="#" title="TimeLogs" onClick={()=> projectTimeLogs(project.projectId)}><span><i className="fa fa-solid fa-list" style={{fontsize:'24px'}}></i></span></a>                                                
                                             </div>
                                         </div>
                                     </div>

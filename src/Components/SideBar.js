@@ -31,30 +31,30 @@ function SideBar(props) {
             <div className="sb-sidenav-menu">
                 <div className="nav">
                     <div className="sb-sidenav-menu-heading">Core</div>
-                    <Link className="nav-link" to="/dashboard">
+                    <Link className="nav-link text-decoration-none" to="/dashboard">
                         <div className="sb-nav-link-icon"><i className="fas fa-tachometer-alt"></i></div>
                         {props.section1}
                     </Link>
 
                     <div className="sb-sidenav-menu-heading">Interface</div>
-                    <a className="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+                    <a className="nav-link collapsed text-decoration-none" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
                         <div className="sb-nav-link-icon"><i className="fas fa-columns"></i></div>
                             Layouts
                     <div className="sb-sidenav-collapse-arrow"><i className="fas fa-angle-down"></i></div>
                     </a>
                     <div className="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                         <nav className="sb-sidenav-menu-nested nav">
-                            <a className="nav-link" href="#" onClick={()=>changeSideBarColour(true)}>Static Navigation</a>
-                            <a className="nav-link" href="#" onClick={()=>changeSideBarColour(false)}>Light Sidenav</a>
+                            <a className="nav-link text-decoration-none" href="#" onClick={()=>changeSideBarColour(true)}>Static Navigation</a>
+                            <a className="nav-link text-decoration-none" href="#" onClick={()=>changeSideBarColour(false)}>Light Sidenav</a>
                         </nav>
                     </div>
                     {currentRoleId === SuperAdminRoleId ?
                         <>
-                            <Link className="nav-link" to="/Companies">
+                            <Link className="nav-link text-decoration-none" to="/Companies">
                                 <div className="sb-nav-link-icon"><i className="fas fa-chart-area"></i></div>
                                 {props.section2}
                             </Link>
-                            <Link className="nav-link" to="/Users">
+                            <Link className="nav-link text-decoration-none" to="/Users">
                                 <div className="sb-nav-link-icon"><i className="fas fa-table"></i></div>
                                 {props.section3}
                             </Link>
@@ -62,7 +62,7 @@ function SideBar(props) {
                     :
                         null
                     }
-                    <Link className="nav-link" to="/Projects">
+                    <Link className="nav-link text-decoration-none" to="/Projects">
                         <div className="sb-nav-link-icon"><i className="fas fa-table"></i></div>
                         {props.section4}
                     </Link>

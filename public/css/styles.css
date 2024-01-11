@@ -11271,7 +11271,9 @@ body {
   align-items: center;
   z-index: 50000;
 }
-
+a{
+  text-decoration: none;
+}
 /* Assuming a simple structure with class names like 'multiselect' and 'multiselect-option' */
 .multiselect {
   position: relative;
