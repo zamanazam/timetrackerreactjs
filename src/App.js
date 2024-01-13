@@ -11,6 +11,7 @@ import CreateAccount from './Pages/CreateAccount';
 import NotAuthorized from './Pages/NotAuthorized';
 import LayoutPage from './Layout/LayoutPage';
 import LogInLayout from './Layout/LogInLayout';
+import UserDetails from './Pages/UserDetails';
 
 function App() {
   const PrivateRoute = ({ element, ...props }) => {
@@ -51,6 +52,7 @@ function App() {
                 <Route exact path="/notAuthorized" element={<PrivateRoute element={<NotAuthorized showAlert={showAlert} changeLoaderState={changeLoaderState}/>} />} />
                 <Route exact path="/Detail/:companyId" element={<PrivateRoute element={<CompanyDetail/>} />} />
                 <Route exact path="/users" element={<PrivateRoute element={<Users />} />} />
+                <Route exact path="/Details/:paramUserId/:paramRoleId" element={<PrivateRoute element={<UserDetails />} />} />
                 <Route exact path="/projects" element={<PrivateRoute element={<Projects showAlert={showAlert} changeLoaderState={changeLoaderState}/>} />} />
                 <Route exact path="/ProjectDetails/:id" element={<PrivateRoute element={<ProjectDetails showAlert={showAlert} changeLoaderState={changeLoaderState}/>} />} />
                 <Route exact path="/ProjectTimeLogs/:projectId/:AssigneeId" element={<PrivateRoute element={<ProjectTimeLogs showAlert={showAlert} changeLoaderState={changeLoaderState}/>} />} />

@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-
 import { apiUrl, SuperAdminRoleId, AdminRoleId, EmployeeRoleId, ClientRoleId, paginationArray, getPagesTags, getEntriesOfPagination, getStartPointOfPagination } from "../GlobalFile";
-
 import { useParams } from "react-router-dom";
 import CustomButton from "../Components/CustomButton";
 import CustomFields from "../Components/CustomFields";

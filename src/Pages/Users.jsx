@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { apiUrl, SuperAdminRoleId } from "../GlobalFile";
+import { apiUrl, SuperAdminRoleId, AdminRoleId, EmployeeRoleId, ClientRoleId, paginationArray, getPagesTags, getEntriesOfPagination, getStartPointOfPagination } from "../GlobalFile";
 import { useNavigate } from 'react-router-dom';
-import { useEffectOnce } from "../useEffectOnce";
+import CustomFields from "../Components/CustomFields";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import Alert from "../Components/Alert";
 import PopUps from "../Components/PopUps";
@@ -14,6 +14,12 @@ function Users({ changeLoaderState }) {
     const [isLoading, setIsLoading] = useState(false);
     const [alert, setAlert] = useState(null);
     const [popupProps, setPopupProps] = useState(null);
+    const [pagination, setPagination] = useState({
+        Page: 1,
+        PageSize: 10,
+        Total: 10,
+        TotalPages: 1
+    });
 
     const showPopUp = (props)=>{
         setPopupProps(props);
@@ -54,11 +60,11 @@ function Users({ changeLoaderState }) {
             });
     }
 
-    useEffectOnce(() => {
+    useEffect(() => {
         getUsers();
-    }, []);
+    }, [pagination.Page, pagination.PageSize]);
 
-    const updateUser = (id,status= false)=>{
+    const updateUserStatus = (id,status= false)=>{
         const token = sessionStorage.getItem('Token');
         const url = new URL(apiUrl + '/Admin/UpdateUserStatus');
 
@@ -92,6 +98,11 @@ function Users({ changeLoaderState }) {
         navigate("/createAccount");
     }
 
+    const getUserDetails = (id,roleId)=>{
+        debugger
+        navigate("/Details/"+id+'/'+roleId);
+    }
+
     return (
         <>
         {popupProps && (
@@ -122,13 +133,8 @@ function Users({ changeLoaderState }) {
                             <div className="datatable-top">
                                 <div className="datatable-dropdown">
                                     <label>
-                                        <select className="datatable-selector">
-                                            <option>10</option>
-                                            <option>20</option>
-                                            <option>30</option>
-                                            <option>40</option>
-                                            <option>50</option>
-                                        </select>
+                                    <CustomFields type="select" classField="datatable-selector" value={pagination.PageSize} 
+                                                onChange={(e) => setPagination({ ...pagination, PageSize: e.target.value, Page: 1 })} optionsArray={paginationArray}></CustomFields>
                                     </label>
                                 </div>
                                 <div className="datatable-search">
@@ -139,45 +145,45 @@ function Users({ changeLoaderState }) {
                                 <table id="datatablesSimple" className="datatable-table">
                                     <thead>
                                         <tr>
-                                            <th>Name</th>
-                                            <th>Email</th>
-                                            <th>Company</th>
-                                            <th>Role</th>
+                                            <th className="text-center">Name</th>
+                                            <th className="text-center">Email</th>
+                                            <th className="text-center">Company</th>
+                                            <th className="text-center">Role</th>
                                             <th className="text-center">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {Users !== null && Users.length > 0 ? (
                                             Users.map((User, index) => (
-                                                <tr key={index}>
+                                                <tr key={index} className="text-center">
                                                     <td>{User.name}</td>
                                                     <td>{User.email}</td>
                                                     <td>{User.companyName}</td>
                                                     <td>{User.roleName}</td>
-                                                    <td className="text-center">
+                                                    <td>
                                                         {
                                                             User.isActive == true
                                                                 ? <a className="btn btn-group text-success" onClick={()=>showPopUp({
                                                                     inputs : [],
                                                                     show : true,
-                                                                    title : 'Create Company',
+                                                                    title : 'Block User',
                                                                     message : 'Do you want to block this user?',
                                                                     buttontitle : 'Save',
-                                                                    onClick : ()=>updateUser(User.id,false)
+                                                                    onClick : ()=>updateUserStatus(User.id,false)
                                                                 })
-                                                            }><i className="fas fa-toggle-on h5"></i></a>
+                                                            }><i className="fas fa-toggle-on"></i></a>
                                                                 : <a className="btn btn-group text-secondary" onClick={()=>showPopUp({
                                                                     inputs: [],
                                                                     show: true,
-                                                                    title: 'Create Company',
+                                                                    title: 'Un-block User',
                                                                     message:'Do you want to Un-block this user?',
                                                                     buttontitle: 'Save',
-                                                                    onClick : ()=>updateUser(User.id,true),
+                                                                    onClick : ()=>updateUserStatus(User.id,true),
                                                                 })
-                                                            }><i className="fas fa-toggle-off h5"></i></a>
+                                                            }><i className="fas fa-toggle-off"></i></a>
                                                         }
 
-                                                        <a href="#" className="btn-outline-warning h5 bg-transparent"><i className="fa fa-pencil"></i></a>
+                                                        <a href="#" className="btn-outline-warning bg-transparent" onClick={()=>getUserDetails(User.id,User.roleId)}><i className="fa fa-pencil"></i></a>
                                                     </td>
                                                 </tr>
                                             ))
@@ -186,37 +192,31 @@ function Users({ changeLoaderState }) {
                                 </table>
                             </div>
                             <div className="datatable-bottom">
-                                <div className="datatable-info">Showing 1 to 10 of 57 entries</div>
-                                <nav className="datatable-pagination">
-                                    <ul className="datatable-pagination-list">
-                                        <li className="datatable-pagination-list-item datatable-hidden datatable-disabled">
-                                            <a data-page="1" className="datatable-pagination-list-item-link">
-                                                <i className="fas fa-angle-left"></i>
-                                            </a>
-                                        </li>
-                                        <li className="datatable-pagination-list-item datatable-active">
-                                            <a data-page="1" className="datatable-pagination-list-item-link">1</a>
-                                        </li>
-                                        <li className="datatable-pagination-list-item">
-                                            <a data-page="2" className="datatable-pagination-list-item-link">2</a>
-                                        </li>
-                                        <li className="datatable-pagination-list-item">
-                                            <a data-page="3" className="datatable-pagination-list-item-link">3</a>
-                                        </li>
-                                        <li className="datatable-pagination-list-item">
-                                            <a data-page="4" className="datatable-pagination-list-item-link">4</a>
-                                        </li>
-                                        <li className="datatable-pagination-list-item">
-                                            <a data-page="5" className="datatable-pagination-list-item-link">5</a>
-                                        </li>
-                                        <li className="datatable-pagination-list-item">
-                                            <a data-page="2" className="datatable-pagination-list-item-link">
-                                                <i className="fas fa-angle-right"></i>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </nav>
-                            </div>
+                                    <div className="datatable-info">
+                                        Showing {getStartPointOfPagination(pagination.PageSize, pagination.Page)} to {getEntriesOfPagination(pagination.PageSize, pagination.Page, pagination.Total)} of {pagination.Total} entries
+                                    </div>
+                                    <nav className="datatable-pagination">
+                                        <ul className="datatable-pagination-list">
+                                            <li className={`datatable-pagination-list-item ${pagination.Page === 1 ? 'datatable-disabled datatable-hidden' : ''}`}>
+                                                <a data-page="1" href="#" onClick={() => setPagination({ ...pagination, Page: pagination.Page - 1 })} className="datatable-pagination-list-item-link">
+                                                    <i className="fas fa-angle-left"></i>
+                                                </a>
+                                            </li>
+                                            {getPagesTags(pagination.TotalPages).length > 0 && getPagesTags(pagination.TotalPages).map((result, key) => (
+                                                <li className={`datatable-pagination-list-item ${pagination.Page == result ? 'datatable-active' : ''}`}
+                                                    onClick={() => setPagination({ ...pagination, Page: result })} key={key}>
+                                                    <a data-page={result} className="datatable-pagination-list-item-link text-decoration-none">{result}</a>
+                                                </li>
+                                            ))}
+
+                                            <li className={`datatable-pagination-list-item ${pagination.Page === pagination.TotalPages ? 'datatable-disabled' : ''}`}>
+                                                <a data-page="2" href="#" onClick={() => setPagination({ ...pagination, Page: pagination.Page + 1 })} className="datatable-pagination-list-item-link">
+                                                    <i className="fas fa-angle-right"></i>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
                         </div>
                     </div>
                 </div>

@@ -5,7 +5,7 @@ import Multiselect from 'multiselect-react-dropdown';
 
 function CustomFields({ name, classField, type, placeholder, onChange, value, optionsArray, hideOption }) {
     const [selectedItems, setSelectedItems] = useState([]);
-
+console.log(value);
     useEffect(() => {
         setSelectedItems(value || []);
     }, [value]);
@@ -51,7 +51,7 @@ function CustomFields({ name, classField, type, placeholder, onChange, value, op
                     {optionsArray.filter(option => option.id != hideOption)
                         .map((option, index) => (
                             <option key={index} value={option.id}>
-                                {option.name}
+                               {option.name}
                             </option>
                         ))
                     }

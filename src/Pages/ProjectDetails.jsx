@@ -140,7 +140,7 @@ function ProjectDetails() {
                         message={popupProps.message || null}
                         buttontitle={popupProps.buttontitle || null}
                         onClose={closePopup}
-                        onClick={assignPoject} />)}
+                        onClick={popupProps.onClick} />)}
 
                 {isLoading && <LoadingSpinner />}
 
