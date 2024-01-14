@@ -5,20 +5,28 @@ import Multiselect from 'multiselect-react-dropdown';
 
 function CustomFields({ name, classField, type, placeholder, onChange, value, optionsArray, hideOption }) {
     const [selectedItems, setSelectedItems] = useState([]);
-console.log(value);
     useEffect(() => {
         setSelectedItems(value || []);
     }, [value]);
 
+    // const handleSelect = (selectedList, selectedItem) => {
+    //     setSelectedItems(selectedList);
+    //     onChange(name, selectedList);
+    // }
+
+    // const handleRemove = (selectedList, removedItem) => {
+    //     setSelectedItems(selectedList);
+    //     onChange(name, selectedList);
+    // }
     const handleSelect = (selectedList, selectedItem) => {
         setSelectedItems(selectedList);
-        onChange(name, selectedList);
+        onChange({ target: { name, value: selectedList } });
     }
-
+    
     const handleRemove = (selectedList, removedItem) => {
         setSelectedItems(selectedList);
-        onChange(name, selectedList);
-    }
+        onChange({ target: { name, value: selectedList } });
+    }   
 
     return (
         <>
@@ -61,18 +69,12 @@ console.log(value);
 
             {type === "multiselect" && (
                 <Multiselect
-                    options={optionsArray}
+                    options={optionsArray.filter(option => !hideOption.includes(option.id))}
                     displayValue="name"
                     selectedValues={selectedItems}
                     onSelect={handleSelect}
                     onRemove={handleRemove}
                 />
-                // <Multiselect
-                //     options={optionsArray}
-                //     displayValue="name"
-                //     onSelect={(selectedList, selectedItem) => handleSelect(selectedItem.id)}
-                //     onRemove={(selectedList, removedItem) => handleRemove(removedItem.id)}
-                // />
             )}
         </>
     )

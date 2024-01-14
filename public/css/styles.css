@@ -11314,3 +11314,34 @@ a{
 }
 
 /* Add additional styles as needed */
+
+div.ToShowAttachements {
+  display: none;
+}
+
+td.ShowAttachements:hover div.ToShowAttachements {
+  display: block;
+  font-size: medium;
+}
+div.ToShowLogs {
+  display: none;
+}
+
+td.ShowLogs:hover div.ToShowLogs {
+  display: block;
+  font-size: medium;
+}
+
+div.ToShowHours {
+  display: none;
+}
+
+td.ShowHours:hover div.ToShowHours {
+  display: block;
+  font-size: medium;
+}
+
+
+div.show-ranges {
+  display: none;
+}

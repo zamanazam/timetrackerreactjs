@@ -12,7 +12,7 @@ import NotAuthorized from './Pages/NotAuthorized';
 import LayoutPage from './Layout/LayoutPage';
 import LogInLayout from './Layout/LogInLayout';
 import UserDetails from './Pages/UserDetails';
-
+import Dashboard from './Pages/Dashboard';
 function App() {
   const PrivateRoute = ({ element, ...props }) => {
     const token = sessionStorage.getItem('Token');
@@ -49,6 +49,7 @@ function App() {
               
                 <Route path='/' element={<PrivateRoute element={<LayoutPage showAlert={showAlert}/>}/>}>
                 <Route exact path="/companies" element={<PrivateRoute element={<Companies />} />} />
+                <Route exact path="/Dashboard" element={<PrivateRoute element={<Dashboard />} />} />
                 <Route exact path="/notAuthorized" element={<PrivateRoute element={<NotAuthorized showAlert={showAlert} changeLoaderState={changeLoaderState}/>} />} />
                 <Route exact path="/Detail/:companyId" element={<PrivateRoute element={<CompanyDetail/>} />} />
                 <Route exact path="/users" element={<PrivateRoute element={<Users />} />} />

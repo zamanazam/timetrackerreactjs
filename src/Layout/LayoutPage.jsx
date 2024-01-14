@@ -7,7 +7,7 @@ import { Outlet } from 'react-router-dom'
 function LayoutPage() {
     return (
         <>
-            <NavBar title="EmployeePortal" section1="Setting" section2="ActivityLogy" section3="LogOut" />
+            <NavBar title="EmployeePortal" section1="Profile" section2="ActivityLogy" section3="LogOut" />
             <div id="layoutSidenav">
                 <div id="layoutSidenav_nav">
                     <SideBar section1="Dashboard" section2="Companies" section3="Users" section4="Projects" />

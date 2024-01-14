@@ -56,7 +56,6 @@ function ProjectDetails() {
         fetch(url, options)
             .then((response) => response.json())
             .then((data) => {
-                console.log('Companies', data);
                 setProjectData(data);
                 updateFormInput({
                     name: data?.name,
@@ -69,7 +68,7 @@ function ProjectDetails() {
             })
             .catch((error) => {
                 setIsLoading(false);
-                setAlert({ type: 'Error', msg: error.message });
+                setAlert({type: 'danger', msg: "Operation Failed!" });
             });
     }
 
@@ -114,7 +113,6 @@ function ProjectDetails() {
 
     }
     const assignPoject = (popupReturns) => {
-        console.log('g',)
         console.log('pop', popupReturns);
         debugger
     }
@@ -146,31 +144,31 @@ function ProjectDetails() {
 
                 <h1 className="mt-4">Project Detail Page</h1>
                 <div className="row mt-4">
-                    <div className="col-lg-6 col-md-6 col-sm-12">
+                    <div className="col-xl-6 col-lg-6 col-md-6 col-sm-12">
                         <div className="form-floating mb-3">
                             <CustomFields name="Name" classField="form-control" type="text" placeholder="Project Name" value={formInput.name} onChange={e => updateFormInput({ ...formInput, name: e.target.value })}></CustomFields>
                             <label htmlFor="inputFirstName">Name</label>
                         </div>
+                    </div>
+                    <div className="col-xl-6 col-lg-6 col-md-6 col-sm-12">
                         <div className="form-floating mb-3">
                             <CustomFields name="isActive" classField="form-select" type="select" placeholder="Project Status" value={formInput.isActive} onChange={handleProjectStatus} optionsArray={statusArray}></CustomFields>
                             <label className="inputFirstName">Status</label>
                         </div>
-
-                        <div className="form-floating mb-3">
-                            <input className="border form-control w-100" defaultValue={new Date(ProjectData?.createdOn).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} readOnly />
-                            <label className="formInput">Created On</label>
-                        </div>
                     </div>
-                    <div className="col-lg-6 col-md-6 col-sm-12">
+                    <div className="col-xl-6 col-lg-6 col-md-6 col-sm-12">
                         <div className="form-floating mb-3">
                             <input className="border form-control w-100" defaultValue={ProjectData?.company.name} readOnly />
                             <label htmlFor="inputCompanyName">Company Name</label>
                         </div>
-                        <div className="form-floating mb-3">
-                            <input className="border form-control w-100" defaultValue={ProjectData?.company.email} readOnly />
-                            <label htmlFor="inputFirstName">Company Email</label>
-                        </div>
                     </div>
+                    <div className="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+                            <div className="form-floating mb-3">
+                                <input className="border form-control w-100" defaultValue={ProjectData?.company.email} readOnly />
+                                <label htmlFor="inputFirstName">Company Email</label>
+                            </div>
+                    </div>
+
                 </div>
 
                 <div className="row mt-3">

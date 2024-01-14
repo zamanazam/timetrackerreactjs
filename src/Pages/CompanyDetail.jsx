@@ -137,7 +137,7 @@ const CompanyDetail = () => {
                     setAlert({ type: 'success', msg: "Company Updated successfully!" });
                     GetCompanyDetailsbyId();
                 } else {
-                    setAlert({ type: 'danger', msg: "Updating Company Failed" });
+                    setAlert({ type: 'danger', msg: "Updating Company Failed!" });
                 }
             })
             .catch(error => {
@@ -170,24 +170,30 @@ const CompanyDetail = () => {
                 <h1 className="mt-4 mb-4">Company Details</h1>
                 <div className="row mb-2">
                     <div className="col-lg-4 col-md-6 col-sm-12">
-                        <label>Company Name</label>
-                        <CustomFields classField="form-control" type="text" placeholder="Name"
-                                             value={formInput.name} onChange={e => updateFormInput({ ...formInput, name: e.target.value })} ></CustomFields>
+                        <div className="form-floating">
+                            <CustomFields classField="form-control" type="text" placeholder="Name"
+                                                value={formInput.name} onChange={e => updateFormInput({ ...formInput, name: e.target.value })} ></CustomFields>
+                            <label htmlFor="Name">Company Name</label>
+                        </div>
                         {!isNameValid && (
                             <p className='text-danger mt-1 small'>Enter name first</p>
                         )}
                     </div>
                     <div className="col-lg-4 col-md-6 col-sm-12">
-                        <label>Company Email</label>
-                        <CustomFields classField="form-control" type="email" placeholder="Email"
-                                             value={formInput.email} onChange={e => updateFormInput({ ...formInput, email: e.target.value })} ></CustomFields>
+                        <div className="form-floating">
+                            <CustomFields classField="form-control" type="email" placeholder="Email"
+                                                value={formInput.email} onChange={e => updateFormInput({ ...formInput, email: e.target.value })} ></CustomFields>
+                            <label htmlFor="email">Company Email</label>
+                        </div>
                         {!isEmailValid && (
                             <p className='text-danger mt-1 small'>Enter valid email</p>
                         )}
                     </div>
                     <div className="col-lg-4 col-md-6 col-sm-12">
-                        <label>Status</label>
-                        <CustomFields classField="form-select" type="select" placeholder="Project Status" value={formInput.isActive} onChange={handleCompanyStatus} optionsArray={statusArray}></CustomFields>
+                        <div className="form-floating">
+                            <CustomFields classField="form-select" type="select" placeholder="Project Status" value={formInput.isActive} onChange={handleCompanyStatus} optionsArray={statusArray}></CustomFields>
+                            <label htmlFor="status">Status</label>
+                        </div>
                     </div>
                 </div>
                 <div className="row mb-4">
@@ -223,8 +229,8 @@ const CompanyDetail = () => {
                         </ul>
                     </header>
                     <div className="tab-content">
-                        <article id="tab_specs" className="tab-pane show card-body">
-                            <table className="table border table-hover" id="Specifications">
+                        <article id="tab_specs" className="tab-pane active show card-body">
+                            <table id="data-table" className="datatable-table">
                                 <thead>
                                     <tr>
                                         <th className="text-center">Sr.</th>
@@ -233,20 +239,20 @@ const CompanyDetail = () => {
                                         <th className="text-center">Status</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="dataContainer">
                                     {CompanyData !== null && CompanyData.clientsCompany.length > 0 ? (
                                         CompanyData.clientsCompany.map((client, index) => (
-                                            <tr className="border" key={index}>
-                                                <td className="border text-center">{index + 1}</td>
-                                                <td className="border text-center">{client.name}</td>
-                                                <td className="border text-center">{client.email}</td>
+                                            <tr key={index}>
+                                                <td className="text-center">{index + 1}</td>
+                                                <td className="text-center">{client.name}</td>
+                                                <td className="text-center">{client.email}</td>
 
                                                 {client.isActive ? (
-                                                    <td className="border text-center">
+                                                    <td className="text-center">
                                                         <i className="fa fa-check" title="Active" style={{ fontSize: '24px', color: 'green' }} ></i>
                                                     </td>
                                                 ) : (
-                                                    <td className="border text-center">
+                                                    <td className="text-center">
                                                         <i className="fa fa-ban" title="Blocked" style={{ fontSize: '24px', color: 'red' }} ></i>
                                                     </td>
                                                 )}
@@ -264,7 +270,7 @@ const CompanyDetail = () => {
                             <div className="mb-5 mt-5" id="paginationContainer1"></div>
                         </article>
 
-                        <article id="tab_warranty" className="tab-pane active card-body">
+                        <article id="tab_warranty" className="tab-pane card-body">
                             <div className="row">
                                 <div className="datatable-wrapper datatable-loading no-footer sortable searchable fixed-columns">
                                     <div className="datatable-container">
@@ -290,7 +296,9 @@ const CompanyDetail = () => {
                                                                     ? 'Un-Assigned'
                                                                     : 'Assigned'}
                                                             </td>
-                                                            <td className="border text-center">{projects.createdOn}</td>
+                                                            <td className="border text-center">
+                                                                    {new Date(projects.createdOn).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true })}
+                                                            </td>
                                                             {projects.employeesProjects && projects.employeesProjects.length == 0
                                                                 ? <td className="border text-center"></td>
                                                                 : <td className="border text-center"><a onClick={() => CheckTimeLogbyAdmin(projects.id)} className="btn btn-outline-info"><span><i className="fa fa-solid fa-list" style={{ fontsize: '24px' }}></i></span></a></td>

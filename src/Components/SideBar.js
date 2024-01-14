@@ -31,7 +31,7 @@ function SideBar(props) {
             <div className="sb-sidenav-menu">
                 <div className="nav">
                     <div className="sb-sidenav-menu-heading">Core</div>
-                    <Link className="nav-link text-decoration-none" to="/dashboard">
+                    <Link className="nav-link text-decoration-none" to="/Dashboard">
                         <div className="sb-nav-link-icon"><i className="fas fa-tachometer-alt"></i></div>
                         {props.section1}
                     </Link>
@@ -55,7 +55,7 @@ function SideBar(props) {
                                 {props.section2}
                             </Link>
                             <Link className="nav-link text-decoration-none" to="/Users">
-                                <div className="sb-nav-link-icon"><i className="fas fa-table"></i></div>
+                                <div className="sb-nav-link-icon"><i className="fa fa-users"></i></div>
                                 {props.section3}
                             </Link>
                         </>

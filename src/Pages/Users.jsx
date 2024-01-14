@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { apiUrl, SuperAdminRoleId, AdminRoleId, EmployeeRoleId, ClientRoleId, paginationArray, getPagesTags, getEntriesOfPagination, getStartPointOfPagination } from "../GlobalFile";
+import { apiUrl, allRoles,paginationArray, getPagesTags, getEntriesOfPagination, getStartPointOfPagination, SuperAdminRoleId } from "../GlobalFile";
 import { useNavigate } from 'react-router-dom';
 import CustomFields from "../Components/CustomFields";
 import LoadingSpinner from "../Components/LoadingSpinner";
@@ -8,19 +8,22 @@ import PopUps from "../Components/PopUps";
 
 function Users({ changeLoaderState }) {
     const navigate = useNavigate();
-    const currentRoleId = sessionStorage.getItem('RoleId');
     const [Users, setUsers] = useState(null);
 
     const [isLoading, setIsLoading] = useState(false);
     const [alert, setAlert] = useState(null);
     const [popupProps, setPopupProps] = useState(null);
+    const [formInput, updateFormInput] = useState({
+        name: null,
+        roleId:[]
+    });
     const [pagination, setPagination] = useState({
         Page: 1,
         PageSize: 10,
         Total: 10,
         TotalPages: 1
     });
-
+    const currentRoleId = sessionStorage.getItem('RoleId');
     const showPopUp = (props)=>{
         setPopupProps(props);
     }
@@ -28,17 +31,25 @@ function Users({ changeLoaderState }) {
         setPopupProps(null);
     };
 
+    const updateMultiselectInput = (updatedField) => {
+            updateFormInput((prevFormInput) => ({
+                ...prevFormInput,
+                roleId: updatedField, 
+            }));
+            console.log(formInput);
+        };
 
-    const getUsers = (Page = 1) => {
+    const getUsers = () => {
         setIsLoading(true)
         const token = sessionStorage.getItem('Token');
         const url = new URL(apiUrl + '/Admin/GetAllUsers');
         const PageSize = 10;
-        var RoleIds = [];
+        var RoleIds = formInput.roleId.map(role => role.id);
         var SearchUsersObj = {
-            'Page': Page,
-            'PageSize': PageSize,
-            'RoleId': RoleIds
+            'Page': pagination.Page,
+            'PageSize': pagination.PageSize,
+            'RoleId': RoleIds,
+            'Name': formInput?.name,
         }
         fetch(url, {
             method: 'POST',
@@ -51,9 +62,14 @@ function Users({ changeLoaderState }) {
         })
             .then((response) => response.json())
             .then((data) => {
+                setPagination({
+                    Page: data.page,
+                    PageSize: data.pageSize,
+                    Total: data.total,
+                    TotalPages: data.totalPages
+                })
                 setIsLoading(false)
                 setUsers(data.results);
-                console.log('Users', data.results);
             })
             .catch((error) => {
                 console.error('Error:', error);
@@ -61,8 +77,11 @@ function Users({ changeLoaderState }) {
     }
 
     useEffect(() => {
+        if(currentRoleId != SuperAdminRoleId){
+            navigate('/projects');
+        }
         getUsers();
-    }, [pagination.Page, pagination.PageSize]);
+    }, [pagination.Page, pagination.PageSize,formInput.name,formInput.roleId]);
 
     const updateUserStatus = (id,status= false)=>{
         const token = sessionStorage.getItem('Token');
@@ -99,7 +118,6 @@ function Users({ changeLoaderState }) {
     }
 
     const getUserDetails = (id,roleId)=>{
-        debugger
         navigate("/Details/"+id+'/'+roleId);
     }
 
@@ -137,14 +155,17 @@ function Users({ changeLoaderState }) {
                                                 onChange={(e) => setPagination({ ...pagination, PageSize: e.target.value, Page: 1 })} optionsArray={paginationArray}></CustomFields>
                                     </label>
                                 </div>
-                                <div className="datatable-search">
-                                    <input type="text" className="datatable-input" placeholder="Search" />
+                                <div className="d-flex">
+                                    <CustomFields type="text" className="form-control me-3" placeholder="Name" value={formInput.name} onChange={(e)=>{updateFormInput({...formInput, name: e.target.value})}}></CustomFields>
+                                    <CustomFields type="multiselect" className="form-select ms-3" placeholder="Role" optionsArray={allRoles} value={formInput.roleId} hideOption={SuperAdminRoleId} onChange={(e)=>{updateMultiselectInput(e.target.value)}}></CustomFields>
                                 </div>
+
                             </div>
                             <div className="datatable-container">
                                 <table id="datatablesSimple" className="datatable-table">
                                     <thead>
                                         <tr>
+                                            <th className="text-center">Sr</th>
                                             <th className="text-center">Name</th>
                                             <th className="text-center">Email</th>
                                             <th className="text-center">Company</th>
@@ -156,6 +177,9 @@ function Users({ changeLoaderState }) {
                                         {Users !== null && Users.length > 0 ? (
                                             Users.map((User, index) => (
                                                 <tr key={index} className="text-center">
+                                                    <td className="text-center">
+                                                        {getStartPointOfPagination(pagination.PageSize, pagination.Page) + index}
+                                                    </td>
                                                     <td>{User.name}</td>
                                                     <td>{User.email}</td>
                                                     <td>{User.companyName}</td>

@@ -49,6 +49,7 @@ const ProjectTimeLogs = () => {
 
     const GetTimeLogs = async () => {
         setIsLoading(true);
+        debugger
         var EmployeeId = null;
         var UserId = null;
         var firstDate = formInput?.startDate;
@@ -69,8 +70,8 @@ const ProjectTimeLogs = () => {
         if (EmployeeId == 'undefined')
             EmployeeId = null;
 
-        if (formInput?.employeeName != '')
-            EmployeeId = null;
+        // if (formInput?.employeeName == '')
+        //     EmployeeId = null;
 
         var TimeLogsuserProjectDTo = {
             'DateFrom': firstDate,
@@ -83,6 +84,7 @@ const ProjectTimeLogs = () => {
             'CRoleId': currentRoleId,
             'EmployeeName': formInput?.employeeName
         }
+        debugger
         const url = new URL(apiUrl + '/ProjectTimeLogs/GetTimeLogbyConditions');
         const response = await fetch(url, {
             method: 'POST',
@@ -328,13 +330,13 @@ const ProjectTimeLogs = () => {
                         </div>
                     </div>
                 }
-                {(currentRoleId == ClientRoleId || currentRoleId == SuperAdminRoleId)
-                    &&
                     <div className="row mt-4 mb-4">
                         <div className="col-xl-6 col-lg-6 col-md-6 col-sm-12">
-                            <CustomFields name="Assignees" InputTitle='Employees' classField='form-control mb-2 w-50' value={formInput?.employeeName} placeholder='Employees' type='text' onChange={(e) => updateFormInput({ ...formInput, employeeName: e.target.value })} ></CustomFields>
+                            {currentRoleId == SuperAdminRoleId &&
+                                <CustomFields name="Assignees" InputTitle='Employees' classField='form-control mb-2 w-50' value={formInput?.employeeName} placeholder='Employees' type='text' onChange={(e) => updateFormInput({ ...formInput, employeeName: e.target.value })} ></CustomFields>
+                            }
                         </div>
-                        {showButtons && (
+                        {showButtons && currentRoleId == ClientRoleId && (
                             <div className="col-xl-6 col-lg-6 col-md-6 col-sm-12">
                                 <CustomButton className="btn btn-warning float-end ms-2" label="Reject"
                                     icon={<span className="me-2"><i className="fa fa-close"></i></span>}
@@ -352,7 +354,6 @@ const ProjectTimeLogs = () => {
                             </div>
                         )}
                     </div>
-                }
 
                 <div className="row mt-4 mb-5">
                     <div className="card p-3">
@@ -444,7 +445,7 @@ const ProjectTimeLogs = () => {
                                                 ))}
                                                 {TimeLogsData == 0 &&
                                                     <tr>
-                                                        <td colSpan={6} align="center">No Data Found</td>
+                                                        <td colSpan={7} align="center">No Data Found</td>
                                                     </tr>}
                                             </tbody>
                                         </table>
@@ -496,7 +497,6 @@ const ProjectTimeLogs = () => {
                                         <table id="datatablesSimple" className="datatable-table">
                                             <thead>
                                                 <tr>
-                                                    <th className="text-center">Company</th>
                                                     <th className="text-center">Company</th>
                                                     <th className="text-center">Employee</th>
                                                     <th className="text-center">LogText</th>
