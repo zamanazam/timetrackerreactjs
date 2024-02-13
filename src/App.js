@@ -31,11 +31,11 @@ function App() {
     setIsLoading(input);
  };
 
-      const showAlert = (alertType,message)=>{
-        setAlert({
+ const showAlert = (alertType,message)=>{
+      setAlert({
             type:alertType,
             msg:message
-        })
+      })
 
     }
 
@@ -47,7 +47,7 @@ function App() {
                 <Route index element={<LogIn changeLoaderState={changeLoaderState}/>} />
               </Route>
               
-                <Route path='/' element={<PrivateRoute element={<LayoutPage showAlert={showAlert}/>}/>}>
+                <Route path='/' element={<PrivateRoute element={<LayoutPage showAlert={showAlert} />}/>}>
                 <Route exact path="/companies" element={<PrivateRoute element={<Companies />} />} />
                 <Route exact path="/Dashboard" element={<PrivateRoute element={<Dashboard />} />} />
                 <Route exact path="/notAuthorized" element={<PrivateRoute element={<NotAuthorized showAlert={showAlert} changeLoaderState={changeLoaderState}/>} />} />

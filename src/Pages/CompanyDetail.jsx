@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { apiUrl,statusArray } from '../GlobalFile';
+import { statusArray } from '../GlobalFile';
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 import PopUps from "../Components/PopUps";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import Alert from "../Components/Alert";
 import CustomFields from "../Components/CustomFields";
+import companyServices from "../Services/CompanyServices";
+import projectServices from "../Services/ProjectServices";
+import commonServices from "../Services/CommonServices";
 
 const CompanyDetail = () => {
     const [CompanyData, setCompanyData] = useState(null);
@@ -20,10 +23,6 @@ const CompanyDetail = () => {
     const { companyId } = useParams();
     const navigate = useNavigate();
 
-    const token = sessionStorage.getItem('Token');
-    const controller = new AbortController();
-    const signal = controller.signal;
-
     const openPopup = (props) => {
         setPopupProps(props);
     };
@@ -32,38 +31,25 @@ const CompanyDetail = () => {
         setPopupProps(null);
     };
 
-    const GetCompanyDetailsbyId = (e) => {
+    const GetCompanyDetails = async (e) => {
         setIsLoading(true);
-        const headers = new Headers();
-        const token = sessionStorage.getItem('Token');
-        headers.append('Authorization', 'Bearer ' + token);
-        headers.append('Content-Type', 'application/json');
-
-        const url = new URL(apiUrl + '/Company/GetCompanyDatabyId');
-        url.searchParams.append('id', companyId);
-        const options = {
-            method: 'GET',
-            headers: headers,
-        };
-
-        fetch(url, options, { signal })
-            .then((response) => response.json())
-            .then((data) => {
+        try{
+                var data = await commonServices.HttpGetbyId(companyId,'/Company/GetCompanyDatabyId');
                 setCompanyData(data);
-                    updateFormInput({
-                        name: data?.name,
-                        email: data?.email,
-                        isActive: data?.isActive
-                    })
-                setIsLoading(false);
-            })
-            .catch((error) => {
-                setAlert({ type: 'danger', msg: error.message });
-            });
+                updateFormInput({
+                    name: data?.name,
+                    email: data?.email,
+                    isActive: data?.isActive
+                });
+            }
+        catch(error){
+                    setAlert({ type: 'danger', msg: error.message });
+            }
+        setIsLoading(false);
     };
 
     useEffect(() => {
-        GetCompanyDetailsbyId();
+        GetCompanyDetails();
     }, []);
 
 
@@ -71,78 +57,61 @@ const CompanyDetail = () => {
         navigate('/ProjectTimeLogs/' + id + '/' + undefined);
     }
 
-    const saveProject = (popReturn) => {
+    const saveProject = async (popReturn) => {
         setIsLoading(true);
         let AddProjectDTO = {
-            Name: popReturn.Name,
-            Description: popReturn.Description,
+            Name: popReturn.find(x => x.name === "Name")?.value || "",
+            Description: popReturn.find(x => x.name === "Description")?.value || "",
             CompanyId: companyId
         }
-        let url = apiUrl + '/Project/AddNewProjects';
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(AddProjectDTO),
-        }).then((response) => response.json())
-            .then(response => {
-                setIsLoading(false)
+        try{
+                var response = await commonServices.HttpPost(AddProjectDTO,'/Project/AddNewProjects');
                 if (response.statusCode == 200) {
                     setAlert({ type: 'success', msg: "Project saved successfully!" });
-                    GetCompanyDetailsbyId();
+                    GetCompanyDetails();
                 } else {
                     setAlert({ type: 'danger', msg: "Updating Project Failed" });
                 }
-            })
-            .catch(error => {
-                setAlert({ type: 'danger', msg: error.message });
-            })
+        }catch(error){
+            setAlert({ type: 'danger', msg: error.message });
+        }
+        closePopup();
+        setIsLoading(false);
     }
 
-    const UpdateCompany = () => {
+    const UpdateCompany = async () => {
         setIsLoading(true);
-        if (formInput.name.trim() === "") {
-            setIsLoading(false);
-            setNameValid(false);
-            return false;
-        }
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const isValid = emailRegex.test(formInput.email);
-        if (!isValid) {
-            setIsLoading(false);
-            setEmailValid(false);
-            return false;
-        }
-
-        let UpdateCompanyDTO = {
-            name: formInput.name,
-            email: formInput.email,
-            isActive: formInput.isActive,
-            id: companyId
-        }
-        let url = apiUrl + '/Company/UpdateCompanybyId';
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(UpdateCompanyDTO),
-        }).then((response) => response.json())
-            .then(response => {
-                setIsLoading(false);
-                if (response.statusCode == 200) {
-                    setAlert({ type: 'success', msg: "Company Updated successfully!" });
-                    GetCompanyDetailsbyId();
-                } else {
-                    setAlert({ type: 'danger', msg: "Updating Company Failed!" });
+        try{
+                if (formInput.name.trim() === "") {
+                    setIsLoading(false);
+                    setNameValid(false);
+                    return false;
                 }
-            })
-            .catch(error => {
-                setAlert({ type: 'danger', msg: error.message });
-            })
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                const isValid = emailRegex.test(formInput.email);
+                if (!isValid) {
+                    setIsLoading(false);
+                    setEmailValid(false);
+                    return false;
+                }
+        
+                let UpdateCompanyDTO = {
+                    name: formInput.name,
+                    email: formInput.email,
+                    isActive: formInput.isActive,
+                    id: companyId
+                }
+                var response = await commonServices.HttpPost(UpdateCompanyDTO,'/Company/UpdateCompanybyId');
+                    if (response.statusCode == 200) {
+                        setAlert({ type: 'success', msg: "Company Updated successfully!" });
+                        GetCompanyDetails();
+                    } else {
+                        setAlert({ type: 'danger', msg: "Updating Company Failed!" });
+                    }
+            }catch(error){
+                    setAlert({ type: 'danger', msg: error.message });
+            }
+            setIsLoading(true);
     };
 
     const handleCompanyStatus = (e) => {
@@ -221,10 +190,10 @@ const CompanyDetail = () => {
                     <header className="card-header">
                         <ul className="nav nav-tabs card-header-tabs">
                             <li className="nav-item">
-                                <a href="#" data-bs-target="#tab_specs" data-bs-toggle="tab" className="nav-link active">Clients</a>
+                                <a href="#" data-bs-target="#tab_specs" data-bs-toggle="tab" className="nav-link customStyles active">Clients</a>
                             </li>
                             <li className="nav-item">
-                                <a href="#" data-bs-target="#tab_warranty" data-bs-toggle="tab" className="nav-link">Projects</a>
+                                <a href="#" data-bs-target="#tab_warranty" data-bs-toggle="tab" className="nav-link customStyles">Projects</a>
                             </li>
                         </ul>
                     </header>

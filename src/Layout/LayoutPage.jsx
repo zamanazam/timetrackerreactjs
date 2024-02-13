@@ -5,10 +5,17 @@ import Footer from '../Components/Footer'
 import { Outlet } from 'react-router-dom'
 
 function LayoutPage() {
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+    const handleSidebarToggle = () => {
+        document.body.classList.toggle('sb-sidenav-toggled');
+        localStorage.setItem('sb|sidebar-toggle', document.body.classList.contains('sb-sidenav-toggled'));
+    };
+
     return (
         <>
-            <NavBar title="EmployeePortal" section1="Profile" section2="ActivityLogy" section3="LogOut" />
-            <div id="layoutSidenav">
+            <NavBar title="EmployeePortal" section1="Profile" section2="ActivityLogy" section3="LogOut" onClick={handleSidebarToggle}/>
+            <div id="layoutSidenav" className={isSidebarOpen ? '' : 'sb-sidenav-toggled'}>
                 <div id="layoutSidenav_nav">
                     <SideBar section1="Dashboard" section2="Companies" section3="Users" section4="Projects" />
                 </div>
@@ -23,4 +30,4 @@ function LayoutPage() {
     )
 }
 
-export default LayoutPage
+export default LayoutPage;

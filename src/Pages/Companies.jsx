@@ -5,6 +5,8 @@ import PopUps from "../Components/PopUps";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import Alert from "../Components/Alert";
 import CustomFields from "../Components/CustomFields";
+import companyServices from "../Services/CompanyServices";
+import commonServices from "../Services/CommonServices";
 const Companies = () => {
     const [AllCompanies, setCompaniesData] = useState([]);
     const navigate = useNavigate();
@@ -33,59 +35,54 @@ const Companies = () => {
     const CompanyDetail = (id) => {
         navigate('/Detail/' + id);
     };
-    const saveCompany = (inputsFromPopUp) => {
-        const AddCompanyDTO = {
-            CompanyName: inputsFromPopUp.Name,
-            CompanyEmail: inputsFromPopUp.Email
-        };
-        let url = apiUrl + '/Company/AddNewCompany';
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(AddCompanyDTO),
-        }).then((response) => response.json())
-            .then(response => {
-                if (response.statusCode == 200) {
-                    setAlert({ type: 'success', msg: "Company saved successfully!" });
-                    GetAllCompanies();
-                } else {
-                    setAlert({ type: 'danger', msg: "Creating company Failed" });
-                }
-            })
-            .catch(error => {
-                setAlert({ type: 'danger', msg: error.message });
-            })
+    const saveCompany = async (inputsFromPopUp) => {
+        setIsLoading(true);
+        try{
+            const AddCompanyDTO = {
+                CompanyName: inputsFromPopUp.find(x => x.name === "Name")?.value || "",
+                CompanyEmail: inputsFromPopUp.find(x => x.name === "Email")?.value || "",
+            };
+            var response = await commonServices.HttpPost(AddCompanyDTO,'/Company/AddNewCompany');
+            if (response.statusCode == 200) {
+                setAlert({ type: 'success', msg: "Company saved successfully!" });
+                GetAllCompanies();
+            } else {
+                setAlert({ type: 'danger', msg: "Creating company Failed" });
+            }
+        } catch (error) {
+            setAlert({ type: 'danger', msg: error.message });
+        }
+            setIsLoading(false);
+            closePopup();
     }
 
     const GetAllCompanies = async () => {
-        setIsLoading(true);
-        const newUrl = apiUrl + '/Company/GetAllComapnies';
+            // setIsLoading(true);
+            const newUrl = apiUrl + '/Company/GetAllComapnies';
 
-        const url = new URL(newUrl);
-        url.searchParams.append('Page', pagination.Page);
-        url.searchParams.append('PageSize', pagination.PageSize);
+            const url = new URL(newUrl);
+            url.searchParams.append('Page', pagination.Page);
+            url.searchParams.append('PageSize', pagination.PageSize);
 
-        const headers = new Headers();
-        headers.append('Authorization', 'Bearer ' + token);
-        headers.append('Content-Type', 'application/json');
+            const headers = new Headers();
+            headers.append('Authorization', 'Bearer ' + token);
+            headers.append('Content-Type', 'application/json');
 
-        const options = {
-            method: 'GET',
-            headers: headers,
-        };
-        const response = await fetch(url, options, { signal });
-        const data = await response.json();
-        setPagination({
-            Page: data.page,
-            PageSize: data.pageSize,
-            Total: data.total,
-            TotalPages: data.totalPages
-        })
-        setCompaniesData(data.results);
-        setIsLoading(false);
+            const options = {
+                method: 'GET',
+                headers: headers,
+            };
+             const response = await fetch(url, options);
+             const data = await response.json();
+            //var data = await commonServices.HttpGet(pagination,'/Company/GetAllComapnies');
+                setPagination({
+                    Page: data?.page,
+                    PageSize: data?.pageSize,
+                    Total: data?.total,
+                    TotalPages: data?.totalPages
+                })
+                setCompaniesData(data?.results);
+            setIsLoading(false);
     };
 
     useEffect(() => {
@@ -106,9 +103,9 @@ const Companies = () => {
                         onClose={closePopup}
                         onClick={saveCompany} />)}
                 {isLoading && <LoadingSpinner />}
-                <h1 className="mt-4">Companies</h1>
-                <div className="row mb-4">
+                <div className="row mt-4 mb-4">
                     <div>
+                        <h1 className="float-start">Companies</h1>
                         <button type="button" className="btn btn-warning float-end"
                             onClick={() => openPopup({
                                 inputs: [
@@ -127,8 +124,8 @@ const Companies = () => {
                         </button>
                     </div>
                 </div>
-                <div className="row mb-4">
-                    <div className="card p-3">
+                <div className="card p-3">
+                    <div className="row mb-4">
                         <div className="card-body">
                             <div className="datatable-wrapper datatable-loading no-footer sortable searchable fixed-columns">
                                 <div className="datatable-top">
@@ -138,9 +135,9 @@ const Companies = () => {
                                                 value={pagination.PageSize} onChange={(e) => setPagination({ ...pagination, PageSize: e.target.value, Page: 1 })} optionsArray={paginationArray}></CustomFields>
                                         </label>
                                     </div>
-                                    <div className="datatable-search">
+                                    {/* <div className="datatable-search">
                                         <input type="text" id="datePickerInput" placeholder="Search" className="form-control text-center" />
-                                    </div>
+                                    </div> */}
                                 </div>
                                 <div className="datatable-container">
                                     <table id="datatablesSimple" className="datatable-table">

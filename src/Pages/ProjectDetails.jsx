@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { apiUrl, statusArray } from "../GlobalFile";
-import { useParams } from "react-router-dom";
+import { json, useParams } from "react-router-dom";
 import CustomButton from "../Components/CustomButton";
 import CustomFields from "../Components/CustomFields";
 import Alert from "../Components/Alert";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import PopUps from "../Components/PopUps";
+import projectServices from "../Services/ProjectServices";
+import commonServices from "../Services/CommonServices";
 function ProjectDetails() {
     const [popupProps, setPopupProps] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -20,64 +22,53 @@ function ProjectDetails() {
     useEffect(() => {
         GetProjectDetails();
         GetAllEmployees();
+
     }, []);
-    let controller = new AbortController();
-    let signal = controller.signal;
 
-    const headers = new Headers();
-    const token = sessionStorage.getItem('Token');
-    headers.append('Authorization', 'Bearer ' + token);
-    headers.append('Content-Type', 'application/json');
-
-    const GetAllEmployees = () => {
-        const url = new URL(apiUrl + '/Admin/GetAllAssignes');
-        const options = {
-            method: 'GET',
-            headers: headers,
-        };
-
-        fetch(url, options)
-            .then((response) => response.json())
-            .then((data) => {
-                console.log('employees', data);
-                setEmployeesArray(data);
-            })
+    const GetAllEmployees = async () => {
+        let response = await commonServices.HttpGet(null,'/Admin/GetAllAssignes');
+        setEmployeesArray(response);
     }
 
-    function GetProjectDetails() {
+    const GetProjectDetails = async () => {
         setIsLoading(true);
-        const url = new URL(apiUrl + '/Project/GetProjectDetailsbyId');
-        url.searchParams.append('id', id);
-        const options = {
-            method: 'GET',
-            headers: headers,
-        };
-
-        fetch(url, options)
-            .then((response) => response.json())
-            .then((data) => {
-                setProjectData(data);
-                updateFormInput({
-                    name: data?.name,
-                    description: data?.description,
-                    isActive: data?.isActive,
-                    employeesProjects: data?.isActive,
-                    Assignees: [],
-                })
-                setIsLoading(false);
+        try{
+            var data = await commonServices.HttpGetbyId(id,'/Project/GetProjectDetailsbyId');
+            setProjectData(data);
+            updateFormInput({
+                name: data?.name,
+                description: data?.description,
+                isActive: data?.isActive,
+                employeesProjects: data?.employeesProjects,
+                Assignees: [],
             })
-            .catch((error) => {
-                setIsLoading(false);
-                setAlert({type: 'danger', msg: "Operation Failed!" });
-            });
+        }catch(error){
+            setAlert({type: 'danger', msg: "Operation Failed!" });
+        }
+        setIsLoading(false);
     }
 
     const handleProjectStatus = (e) => {
         updateFormInput({ ...formInput, isActive: !formInput.isActive })
     }
+
+    const handelProjectAssignments = (assignee,e)=>{
+        const employeeProjectStatus = e;
+            const updatedEmployeesProjects = ProjectData.employeesProjects.map(employee => {
+                if (employee.assignedTo === assignee) {
+                    return { ...employee, employeeProjectStatus };
+                }
+                return employee;
+            });
+            
+            setProjectData(prevInput => ({
+                ...prevInput,
+                employeesProjects: updatedEmployeesProjects
+            }));
+
+    }
     const updateProject = async () => {
         setIsLoading(true);
-        const url = new URL(apiUrl + '/Project/UpdateProjectbyIdandAsignee');
         let updateProjectDTO = {
             Name: formInput.name,
             Description: formInput.description,
@@ -85,42 +76,67 @@ function ProjectDetails() {
             id: id,
             EmployeesProjects: ProjectData?.employeesProjects
         }
-        const options = {
-            method: 'POST',
-            headers: headers,
-        }
-
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(updateProjectDTO),
-        }).then((response) => response.json())
-            .then(response => {
-                setIsLoading(false);
+        
+        try{
+                var response = await commonServices.HttpPost(updateProjectDTO,'/Project/UpdateProjectbyIdandAsignee');
                 if (response.statusCode == 200) {
                     GetProjectDetails();
                     setAlert({ type: 'success', msg: "Project Updated Successfully!" });
                 } else {
                     setAlert({ type: 'danger', msg: "Error Updating Project!" });
                 }
-            }).catch(error => {
-                setIsLoading(false);
+
+            }catch(error){
                 setAlert({ type: 'danger', msg: error.message });
-            })
-
+            }
+            setIsLoading(false);
     }
-    const assignPoject = (popupReturns) => {
-        console.log('pop', popupReturns);
-        debugger
-    }
-
-    const openPopup = (props) => {
-        setPopupProps(props);
+    const assignPoject = async (selectedValues) => {
+        setIsLoading(true);
+        try{
+                let toAssignEmployees = selectedValues.filter(({ name }) => name === "Assignees").map(({ value }) => (Array.isArray(value) ? value.map(assignee => assignee.id) : value));
+                let inWard = selectedValues.filter(({ name }) => name === "InWard").map(({ value }) => value);
+                let outWard = selectedValues.filter(({ name }) => name === "OutWard").map(({ value }) => value);
+                    let AssignProjectDTO = {
+                        ProjectId:id,
+                        InWardRate:inWard[0],
+                        OutWardRate:outWard[0],
+                        EmployeeId:toAssignEmployees[0]
+                    }
+                
+                let data = await commonServices.HttpPost(AssignProjectDTO,'/Project/AssingProjectbyId');
+                if(data.statusCode ==200){
+                    setAlert({ type: 'success', msg: "Project assigned successfully!" });
+                }
+                else{
+                    setAlert({ type: 'danger', msg: "Operation Failed!" });
+                }
+            }catch(error)
+            {
+                setIsLoading(false);
+                setAlert({ type: 'danger', msg: "Operation Failed!" });
+            }
+            closePopup();
+            setIsLoading(false);
+            GetProjectDetails();
     };
 
+    const openPopup = (props) => {
+        const assignedIds = ProjectData.employeesProjects.map(
+            (employee) => employee.projectAssignedToUser.id
+        );
+
+        const filteredOptions = optionsArray.filter(
+            (option) => !assignedIds.includes(option.id)
+        );
+
+        const assigneesInput = props.inputs.find((input) => input.name === "Assignees");
+        if (assigneesInput) {
+            assigneesInput.optionsArray = filteredOptions;
+        }
+        setPopupProps(props);
+    };
+    
     const closePopup = () => {
         setPopupProps(null);
     };
@@ -192,39 +208,33 @@ function ProjectDetails() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {ProjectData?.employeesProjects.length > 0 ?
+                                    {ProjectData?.employeesProjects.length > 0 ? (
                                             ProjectData?.employeesProjects.map((employee, i) => (
                                                 <tr key={i}>
                                                     <td className="text-center">{i + 1}</td>
-                                                    <td className="text-center" >{employee.projectAssignedToUser.name}</td>
+                                                    <td className="text-center">{employee.projectAssignedToUser.name}</td>
                                                     <td className="text-center">
-
-                                                        {employee.isActive == true ?
-                                                            <form action="/action_page.php">
-                                                                <input type="radio" />
-                                                                <label>Active</label>
-                                                                <input type="radio" />
-                                                                <label>Disable</label>
-                                                            </form>
-                                                            :
-                                                            <form action="/action_page.php">
-                                                                <input type="radio" />
-                                                                <label>Active</label>
-                                                                <input type="radio" />
-                                                                <label>Disable</label>
-                                                            </form>
-                                                        }
-
+                                                        <form action="/action_page.php">
+                                                            <CustomFields type="radio" onChange={() => handelProjectAssignments(employee.assignedTo, true)}
+                                                                checked={employee.employeeProjectStatus === true} classField="me-2"
+                                                            />
+                                                            <label className="me-4">Active</label>
+                                                            <CustomFields type="radio" onChange={() => handelProjectAssignments(employee.assignedTo, false)}
+                                                                checked={employee.employeeProjectStatus === false} classField="me-2"
+                                                            />
+                                                            <label className="me-4">Disable</label>
+                                                        </form>
                                                     </td>
                                                 </tr>
                                             ))
-                                            :
+                                        ) : (
                                             <tr>
                                                 <td colSpan={3} align="center">
                                                     No data Found
                                                 </td>
                                             </tr>
-                                        }
+                                        )}
+
                                     </tbody>
                                 </table>
                             </div>

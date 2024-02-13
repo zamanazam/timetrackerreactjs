@@ -5,11 +5,11 @@ import CustomFields from "../Components/CustomFields";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import Alert from "../Components/Alert";
 import PopUps from "../Components/PopUps";
+import commonServices from "../Services/CommonServices";
 
 function Users({ changeLoaderState }) {
     const navigate = useNavigate();
     const [Users, setUsers] = useState(null);
-
     const [isLoading, setIsLoading] = useState(false);
     const [alert, setAlert] = useState(null);
     const [popupProps, setPopupProps] = useState(null);
@@ -39,11 +39,8 @@ function Users({ changeLoaderState }) {
             console.log(formInput);
         };
 
-    const getUsers = () => {
+    const getUsers = async () => {
         setIsLoading(true)
-        const token = sessionStorage.getItem('Token');
-        const url = new URL(apiUrl + '/Admin/GetAllUsers');
-        const PageSize = 10;
         var RoleIds = formInput.roleId.map(role => role.id);
         var SearchUsersObj = {
             'Page': pagination.Page,
@@ -51,29 +48,20 @@ function Users({ changeLoaderState }) {
             'RoleId': RoleIds,
             'Name': formInput?.name,
         }
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(SearchUsersObj)
-        })
-            .then((response) => response.json())
-            .then((data) => {
+        try{
+                var data = await commonServices.HttpPost(SearchUsersObj,'/Admin/GetAllUsers');
                 setPagination({
                     Page: data.page,
                     PageSize: data.pageSize,
                     Total: data.total,
                     TotalPages: data.totalPages
                 })
-                setIsLoading(false)
                 setUsers(data.results);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
+        }catch(error)
+        {
+
+        }
+        setIsLoading(false)
     }
 
     useEffect(() => {
@@ -83,34 +71,22 @@ function Users({ changeLoaderState }) {
         getUsers();
     }, [pagination.Page, pagination.PageSize,formInput.name,formInput.roleId]);
 
-    const updateUserStatus = (id,status= false)=>{
-        const token = sessionStorage.getItem('Token');
-        const url = new URL(apiUrl + '/Admin/UpdateUserStatus');
-
+    const updateUserStatus = async (id,status= false)=>{
         var newStatus = status == true ? 1 : 0;
 
         let UpdateUserStatusDTO ={
             Id:id,
             Status:newStatus
         }
-        fetch(url,{
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(UpdateUserStatusDTO)
-        }).then((response) => response.json())
-        .then((data) => {
-            closePopup();
+
+        try{
+            await commonServices.HttpPost(UpdateUserStatusDTO,'/Admin/UpdateUserStatus');
             setAlert({type: 'success', msg: "Company saved successfully!" });
-            getUsers();
-        })
-        .catch((error) => {
-            setIsLoading(false);
-            setAlert({type:'danger',msg:'Status updating failed!'});
-        });
+        }catch(error){
+            
+        }
+        closePopup();
+        getUsers();
     }
 
     const createAccount = ()=>{
@@ -135,17 +111,14 @@ function Users({ changeLoaderState }) {
                 {alert && <Alert type={alert.type} message={alert.msg} />}
             <div className="container">
                     {isLoading && <LoadingSpinner />}
-                <h1 className="mt-4">Users</h1>
-                <div className="row mb-4">
+                <div className="row mt-4 mb-4">
                     <div>
+                        <h1 className="float-start">Users</h1>
                         <button className="btn btn-warning float-end" onClick={() => createAccount()}><span className="me-1"><i className="fa fa-plus"></i></span>User</button>
                     </div>
                 </div>
-                <div className="card">
-                    <div className="card-header bg-gray">
-                        <i className="fas fa-table me-1"></i>
-                        Users Table
-                    </div>
+                <div className="card p-3">
+                    <div className="row">
                     <div className="card-body">
                         <div className="datatable-wrapper datatable-loading no-footer sortable searchable fixed-columns">
                             <div className="datatable-top">
@@ -156,8 +129,8 @@ function Users({ changeLoaderState }) {
                                     </label>
                                 </div>
                                 <div className="d-flex">
-                                    <CustomFields type="text" className="form-control me-3" placeholder="Name" value={formInput.name} onChange={(e)=>{updateFormInput({...formInput, name: e.target.value})}}></CustomFields>
-                                    <CustomFields type="multiselect" className="form-select ms-3" placeholder="Role" optionsArray={allRoles} value={formInput.roleId} hideOption={SuperAdminRoleId} onChange={(e)=>{updateMultiselectInput(e.target.value)}}></CustomFields>
+                                    <CustomFields type="text" className="searchBox me-3" placeholder="Name" value={formInput.name} onChange={(e)=>{updateFormInput({...formInput, name: e.target.value})}}></CustomFields>
+                                    <CustomFields type="multiselect" className="form-select-sm ms-3" placeholder="Role" optionsArray={allRoles} value={formInput.roleId} hideOption={SuperAdminRoleId} onChange={(e)=>{updateMultiselectInput(e.target.value)}}></CustomFields>
                                 </div>
 
                             </div>
@@ -187,7 +160,7 @@ function Users({ changeLoaderState }) {
                                                     <td>
                                                         {
                                                             User.isActive == true
-                                                                ? <a className="btn btn-group text-success" onClick={()=>showPopUp({
+                                                                ? <a className="text-success me-3" onClick={()=>showPopUp({
                                                                     inputs : [],
                                                                     show : true,
                                                                     title : 'Block User',
@@ -207,7 +180,9 @@ function Users({ changeLoaderState }) {
                                                             }><i className="fas fa-toggle-off"></i></a>
                                                         }
 
-                                                        <a href="#" className="btn-outline-warning bg-transparent" onClick={()=>getUserDetails(User.id,User.roleId)}><i className="fa fa-pencil"></i></a>
+                                                            <a href="#" className="text-warning" onClick={()=>getUserDetails(User.id,User.roleId)}>
+                                                                <i className="fa fa-pencil"></i>
+                                                            </a>
                                                     </td>
                                                 </tr>
                                             ))
@@ -242,6 +217,7 @@ function Users({ changeLoaderState }) {
                                     </nav>
                                 </div>
                         </div>
+                    </div>
                     </div>
                 </div>
             </div>

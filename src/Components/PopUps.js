@@ -14,7 +14,6 @@ function PopUps(props) {
     // };
 
     const handleInputChange = (name, value) => {
-        debugger
         setInputValues((prevValues) => {
             if (inputs.find(input => input.name === name && input.type === "multiselect")) {
                 return { ...prevValues, [name]: value.map(item => item.id) };
@@ -24,8 +23,14 @@ function PopUps(props) {
         });
     };
 
-    const handleClick = () => {
-        onClick(inputValues);
+    const handleClick = (e) => {
+        e.preventDefault();
+        const selectedValues = Object.entries(inputValues).map(([name, value]) => ({
+            name,
+            value,
+          }));
+      
+          props.onClick(selectedValues);
     };
     return (
 

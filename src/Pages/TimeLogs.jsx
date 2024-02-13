@@ -9,6 +9,7 @@ import PopUps from "../Components/PopUps";
 import { DateRangePicker } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
+import commonServices from "../Services/CommonServices";
 
 const ProjectTimeLogs = () => {
     const [TimeLogsData, setTimeLogsData] = useState([]);
@@ -21,8 +22,8 @@ const ProjectTimeLogs = () => {
         id: null,
         hours: '',
         description: '',
-        startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-        endDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0),
+        //startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+        //endDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0),
         employeeName: ''
     });
     const token = sessionStorage.getItem('Token');
@@ -31,6 +32,7 @@ const ProjectTimeLogs = () => {
     const [popupProps, setPopupProps] = useState(null);
     const [projectAssigneeId, setProjectAssigneeId] = useState(0);
     const [dateRange, setDateRange] = useState({ startDate: new Date(), endDate: new Date() });
+    const [selectedRange, setSelectedRange] = useState('startDate');
     const [pagination, setPagination] = useState({
         Page: 1,
         PageSize: 10,
@@ -39,21 +41,34 @@ const ProjectTimeLogs = () => {
     });
 
     const handleDateRange = async (ranges) => {
-        setDatePickerVisible(false);
-        setFormInput(prevFormInput => ({
-            ...prevFormInput,
-            startDate: ranges.startDate,
-            endDate: ranges.endDate
-        }))
+        // if (selectedRange === 'startDate') {
+        //     setDateRange((prevDateRange) => ({ ...prevDateRange, startDate: ranges.startDate }));
+        //     setSelectedRange('endDate');
+        //   } else {
+        //     setDateRange((prevDateRange) => ({ ...prevDateRange, endDate: ranges.endDate }));
+        //     setSelectedRange('startDate');
+        //   }
+          setDateRange(prevDateRange=>({...prevDateRange, startDate: ranges.startDate,endDate: ranges.endDate }));
+        // setFormInput(prevFormInput => ({
+        //     ...prevFormInput,
+        //     startDate: ranges.startDate,
+        //     endDate: ranges.endDate
+        // }))
     };
+
+    const upDateDateRange = ()=>{
+        if (dateRange?.startDate && dateRange?.endDate) {
+            setDatePickerVisible(false);
+            GetTimeLogs();
+        }
+    }
 
     const GetTimeLogs = async () => {
         setIsLoading(true);
-        debugger
         var EmployeeId = null;
         var UserId = null;
-        var firstDate = formInput?.startDate;
-        var lastDate = formInput?.endDate;
+        var firstDate = dateRange?.startDate;
+        var lastDate = dateRange?.endDate;
 
         EmployeeId = AssigneeId;
         setProjectAssigneeId(AssigneeId);
@@ -84,59 +99,44 @@ const ProjectTimeLogs = () => {
             'CRoleId': currentRoleId,
             'EmployeeName': formInput?.employeeName
         }
-        debugger
-        const url = new URL(apiUrl + '/ProjectTimeLogs/GetTimeLogbyConditions');
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(TimeLogsuserProjectDTo)
-        });
-        const data = await response.json();
-        setPagination({
-            Page: data?.page,
-            PageSize: data?.pageSize,
-            Total: data?.total,
-            TotalPages: data?.totalPages
-        })
-        setTimeLogsData(data.results);
+        try{
+            var data = await  commonServices.HttpPost(TimeLogsuserProjectDTo,'/ProjectTimeLogs/GetTimeLogbyConditions');
+            setPagination({
+                Page: data?.page,
+                PageSize: data?.pageSize,
+                Total: data?.total,
+                TotalPages: data?.totalPages
+            })
+            setTimeLogsData(data.results);
+        }catch(error){
+            console.log('error',error);
+            setAlert({ type: 'danger', msg: error.message });
+        }
         setIsLoading(false);
     };
 
 
     useEffect(() => {
         GetTimeLogs();
-    }, [formInput?.startDate, formInput?.endDate, formInput?.employeeName, pagination.Page, pagination.PageSize]);
+    }, [formInput?.employeeName, pagination.Page, pagination.PageSize]);
 
-    const CreateTimeLog = () => {
+    const CreateTimeLog = async () => {
         setIsLoading(true);
         var ProjectTimeLogDTO = {
             ProjectId: projectId,
             Hours: formInput.hours || 0,
-            Text: formInput.description || ''
+            Text: formInput.description || '',
+            EmployeeId: currentUserId
         };
-        const url = new URL(apiUrl + '/ProjectTimeLogs/AddProjectTimeLogsbyProjectId');
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(ProjectTimeLogDTO)
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                setIsLoading(false);
-                setAlert({ type: 'success', msg: data });
-                window.location.reload();
-            })
-            .catch((error) => {
-                setAlert({ type: 'danger', msg: "TimeLog Creating Failed!" });
-            });
+        try
+        {
+            var data = await commonServices.HttpPost(ProjectTimeLogDTO,'/ProjectTimeLogs/AddProjectTimeLogsbyProjectId');
+            setIsLoading(false);
+            setAlert({ type: 'success', msg: data });
+            GetTimeLogs();
+        }catch(error){
+            setAlert({ type: 'danger', msg: "TimeLog Creating Failed!" });
+        }
     };
 
     const updateFormInput = (newInput) => {
@@ -154,7 +154,7 @@ const ProjectTimeLogs = () => {
         })
     };
 
-    const updateTimeLogs = () => {
+    const updateTimeLogs = async () => {
         setIsLoading(true);
         let UpdateTimeLogsDTO = {
             Id: formInput.id,
@@ -162,28 +162,40 @@ const ProjectTimeLogs = () => {
             Text: formInput.description
         }
 
-        const url = new URL(apiUrl + '/ProjectTimeLogs/UpdateTimeLogbyId');
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(UpdateTimeLogsDTO)
-        })
-            .then((response) => response.json())
-            .then((data) => {
+        // const url = new URL(apiUrl + '/ProjectTimeLogs/UpdateTimeLogbyId');
+        // fetch(url, {
+        //     method: 'POST',
+        //     headers: {
+        //         'Authorization': 'Bearer ' + token,
+        //         'Accept': 'application/json',
+        //         'Content-Type': 'application/json',
+        //     },
+        //     body: JSON.stringify(UpdateTimeLogsDTO)
+        // })
+        //     .then((response) => response.json())
+        //     .then((data) => {
+        //         setUpdateButton(false);
+        //         if (data.statusCode == 200) {
+        //             setAlert({ type: 'success', msg: "TimeLog Updated Successfully!" });
+        //         }
+        //         window.location.reload();
+        //         setIsLoading(true);
+        //     })
+        //     .catch((error) => {
+        //         setAlert({ type: 'danger', msg: "TimeLog Updating Failed!" });
+        //     });
+
+            try{
+                var data = await commonServices.HttpPost(UpdateTimeLogsDTO,'/ProjectTimeLogs/UpdateTimeLogbyId');
                 setUpdateButton(false);
                 if (data.statusCode == 200) {
                     setAlert({ type: 'success', msg: "TimeLog Updated Successfully!" });
                 }
                 window.location.reload();
                 setIsLoading(true);
-            })
-            .catch((error) => {
+            }catch(error){
                 setAlert({ type: 'danger', msg: "TimeLog Updating Failed!" });
-            });
+            }
     };
 
     const showDeletTimeLogsModal = (props) => {
@@ -200,30 +212,43 @@ const ProjectTimeLogs = () => {
         setPopupProps(null);
     };
 
-    const DeleteTimeLog = (id) => {
+    const DeleteTimeLog = async (id) => {
         setIsLoading(true);
-        const url = new URL(apiUrl + '/ProjectTimeLogs/DeleteTimeLogsbyId?id=' + id);
-        fetch(url, {
-            method: 'Delete',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            }
-        }).then((response) => response.json())
-            .then((data) => {
-                setUpdateButton(false);
-                if (data.statusCode == 200) {
-                    setAlert({ type: 'success', msg: "TimeLog Deleted Successfully!" });
-                }
-                GetTimeLogs();
-                setIsLoading(false);
-                closePopup();
+        // const url = new URL(apiUrl + '/ProjectTimeLogs/DeleteTimeLogsbyId?id=' + id);
+        // fetch(url, {
+        //     method: 'Delete',
+        //     headers: {
+        //         'Authorization': 'Bearer ' + token,
+        //         'Accept': 'application/json',
+        //         'Content-Type': 'application/json',
+        //     }
+        // }).then((response) => response.json())
+        //     .then((data) => {
+        //         setUpdateButton(false);
+        //         if (data.statusCode == 200) {
+        //             setAlert({ type: 'success', msg: "TimeLog Deleted Successfully!" });
+        //         }
+        //         GetTimeLogs();
+        //         setIsLoading(false);
+        //         closePopup();
 
-            })
-            .catch((error) => {
-                setAlert({ type: 'danger', msg: "TimeLog Deleting Failed!" });
-            });
+        //     })
+        //     .catch((error) => {
+        //         setAlert({ type: 'danger', msg: "TimeLog Deleting Failed!" });
+        //     });
+
+            try{
+                    var data = await commonServices.HttpPost(id,'/ProjectTimeLogs/DeleteTimeLogsbyId');
+                    setUpdateButton(false);
+                    if (data.statusCode == 200) {
+                        setAlert({ type: 'success', msg: "TimeLog Deleted Successfully!" });
+                    }
+                    GetTimeLogs();
+                    setIsLoading(false);
+                    closePopup();
+            }catch(error){
+                    setAlert({ type: 'danger', msg: "TimeLog Deleting Failed!" });
+            }
     };
 
     const [selectAll, setSelectAll] = useState(false);
@@ -250,49 +275,37 @@ const ProjectTimeLogs = () => {
     const approveTimeLog = () => {
         const selectedLogs = selectedRows.map(index => TimeLogsData[index].timeLogsId);
         setTimeLogsStatus(selectedLogs, true, null);
-
     };
 
     const rejectTimeLog = (popReturn) => {
         const selectedLogs = selectedRows.map(index => TimeLogsData[index].timeLogsId);
-        setTimeLogsStatus(selectedLogs, false, popReturn.Comment || '');
+        setTimeLogsStatus(selectedLogs, false, popReturn.find(x => x.name === "Comment")?.value || "");
     };
 
-    const setTimeLogsStatus = (selectedIds, status, text = null) => {
-        if (selectedIds.length == 0) {
-            return false;
-        }
-        setIsLoading(true);
-        let TimeLogsCommentDTO = [];
-        for (var s of selectedIds) {
-            TimeLogsCommentDTO.push({ Id: s, Status: status, Text: text })
-        }
-
-        const url = new URL(apiUrl + '/ProjectTimeLogs/UpdateTimeLogsStatus');
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(TimeLogsCommentDTO)
-        }).then((response) => response.json())
-            .then((data) => {
+    const setTimeLogsStatus = async (selectedIds, status, text = null) => {
+        
+        try{
+                if (selectedIds.length == 0) {
+                    return false;
+                }
+                setIsLoading(true);
+                let TimeLogsCommentDTO = [];
+                for (var s of selectedIds) {
+                    TimeLogsCommentDTO.push({ Id: s, Status: status, Text: text })
+                }
+                var data = await commonServices.HttpPost(TimeLogsCommentDTO,'/ProjectTimeLogs/UpdateTimeLogsStatus');
                 setAlert({ type: 'success', msg: data });
                 GetTimeLogs();
                 setIsLoading(false);
                 closePopup();
-            })
-            .catch((error) => {
+        }catch(error){
                 setAlert({ type: 'danger', msg: error.message });
-            });
+        }
     };
 
     const formatDate = (date) => {
         const options = { month: 'numeric', day: 'numeric', year: 'numeric' };
         return date.toLocaleDateString('en-US', options);
-        return date;
     };
     return (
         <>
@@ -355,7 +368,7 @@ const ProjectTimeLogs = () => {
                         )}
                     </div>
 
-                <div className="row mt-4 mb-5">
+                <div className="row mb-5">
                     <div className="card p-3">
                         <div className="card-body">
                             <div className="datatable-wrapper datatable-loading no-footer sortable searchable fixed-columns">
@@ -372,13 +385,20 @@ const ProjectTimeLogs = () => {
                                             id="datePickerInput"
                                             placeholder="Select Date Range"
                                             className="form-control text-center"
-                                            value={`${formatDate(formInput?.startDate)} - ${formatDate(formInput?.endDate)}`}
+                                            value={`${formatDate(dateRange?.startDate)} - ${formatDate(dateRange?.endDate)}`}
                                             onChange={() => { }}
                                             onClick={() => setDatePickerVisible(true)}
                                         />
                                         {datePickerVisible && (
-                                            <div className="mt-1 ml-4" >
-                                                <DateRangePicker
+                                            <div className="mt-1 ml-4 pb-3" style={{ position: 'relative' }}>
+                                                  <DateRangePicker
+                                                    ranges={[dateRange]}
+                                                    onChange={(selected) => {
+                                                        const { range1 } = selected;
+                                                        handleDateRange(range1);
+                                                    }}
+                                                    />
+                                                {/* <DateRangePicker
                                                     ranges={[dateRange]}
                                                     calendarAriaLabel="Toggle calendar"
                                                     clearAriaLabel="Clear value"
@@ -394,7 +414,10 @@ const ProjectTimeLogs = () => {
                                                         const { startDate, endDate } = range1;
                                                         handleDateRange(range1);
                                                     }}
-                                                />
+                                                /> */}
+                                                <button className="rounded-3 mb-2 btn-primary justify-content-end align-bottom" onClick={upDateDateRange} style={{ position: 'absolute', bottom: 0, right: 5 }}>
+                                                    Apply
+                                                </button>
                                             </div>
                                         )}
                                     </div>

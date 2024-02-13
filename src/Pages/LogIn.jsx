@@ -1,16 +1,17 @@
 import React,{useState} from 'react';
 import { apiUrl,SuperAdminRoleId } from '../GlobalFile';
 import { Link, useNavigate } from 'react-router-dom';
+import Alert from "../Components/Alert";
 
 import LoadingSpinner from "../Components/LoadingSpinner";
+import commonServices from '../Services/CommonServices';
 
 function LogIn(){
-    console.log('login',1);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [inputType, setInputType] = useState('password'||'text')
+  const [inputType, setInputType] = useState('password'||'text');
+  const [alert, setAlert] = useState(null);
   const navigate = useNavigate();
-
   const [isLoading, setIsLoading] = useState(false);
 
 function showPassword(){
@@ -36,36 +37,37 @@ function showPassword(){
       password: password,
     };
 
-    fetch(apiUrl+'/Home/LogIn', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(AuthenticateRequest),
-    })
-      .then((response) => response.json())
-      .then((response) => {
-            setIsLoading(false);
+        fetch(apiUrl+'/Home/LogIn', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(AuthenticateRequest),
+          })
+            .then((response) => response.json())
+            .then((response) => {
+            // setIsLoading(false);
             if(response.id == undefined){
                 return false;
             }
-            sessionStorage.setItem('RoleId',response.roleId);
-            sessionStorage.setItem('UserId',response.id);
-            sessionStorage.setItem('Token',response.token);
-            sessionStorage.setItem('Name',response.name);
+             sessionStorage.setItem('RoleId',response.roleId);
+             sessionStorage.setItem('UserId',response.id);
+             sessionStorage.setItem('Token',response.token);
+             sessionStorage.setItem('Name',response.name);
             if(response.roleId == SuperAdminRoleId){
                 navigate("/companies");
             }else{
                 navigate("/projects");
             }
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
+        })
+        .catch((error) => {
+            setAlert({ type: 'danger', msg: error.message });
+        });
  };
 
   return (
     <div className="bg-primary">
+    {alert && <Alert type={alert.type} message={alert.msg} />}
     {isLoading && <LoadingSpinner />}
     <div id="layoutAuthentication">
             <div id="layoutAuthentication_content">

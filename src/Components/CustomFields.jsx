@@ -3,11 +3,11 @@ import "@blueprintjs/core/lib/css/blueprint.css";
 import "@blueprintjs/select/lib/css/blueprint-select.css";
 import Multiselect from 'multiselect-react-dropdown';
 
-function CustomFields({ name, classField, type, placeholder, onChange, value, optionsArray, hideOption }) {
+function CustomFields({ name, classField, type,checked ,placeholder, onChange, value, optionsArray, hideOption }) {
     const [selectedItems, setSelectedItems] = useState([]);
-    useEffect(() => {
-        setSelectedItems(value || []);
-    }, [value]);
+    // useEffect(() => {
+    //     setSelectedItems(value || []);
+    // }, [value]);
 
     // const handleSelect = (selectedList, selectedItem) => {
     //     setSelectedItems(selectedList);
@@ -46,6 +46,10 @@ function CustomFields({ name, classField, type, placeholder, onChange, value, op
                 <input name={name} className={classField} type={type} placeholder={placeholder} defaultValue={value} onChange={onChange} />
             }
 
+            {type == "radio" &&
+                <input name={name} className={classField} checked={checked} type={type}  defaultValue={value} onChange={onChange} />
+            }
+
             {type == "checkbox" &&
                 <input name={name} className={classField} type={type} placeholder={placeholder} defaultValue={value} onChange={onChange} />
             }
@@ -69,7 +73,7 @@ function CustomFields({ name, classField, type, placeholder, onChange, value, op
 
             {type === "multiselect" && (
                 <Multiselect
-                    options={optionsArray.filter(option => !hideOption.includes(option.id))}
+                    options={optionsArray.filter(option => !hideOption?.includes(option.id))}
                     displayValue="name"
                     selectedValues={selectedItems}
                     onSelect={handleSelect}

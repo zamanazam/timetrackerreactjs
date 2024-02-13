@@ -9,7 +9,7 @@ export default function Footer() {
                     <div>
                         <a href="#">Privacy Policy</a>
                         &middot;
-                        <a href="#">Terms &amp; Conditions</a>
+                        {/* <a href="#">Terms &amp; Conditions</a> */}
                     </div>
                 </div>
             </div>

@@ -7,6 +7,7 @@ import LoadingSpinner from "../Components/LoadingSpinner";
 import Alert from "../Components/Alert";
 import PopUps from "../Components/PopUps";
 import CustomButton from '../Components/CustomButton';
+import commonServices from '../Services/CommonServices';
 function UserDetails() {
   const [LeadData, setLeadData] = useState(null);
   const [EmployeeData, setEmployeeData] = useState(null);
@@ -28,17 +29,6 @@ function UserDetails() {
 
   const { paramUserId, paramRoleId } = useParams();
   const navigate = useNavigate();
-
-  const headers = new Headers();
-  const token = sessionStorage.getItem('Token');
-  headers.append('Authorization', 'Bearer ' + token);
-  headers.append('Content-Type', 'application/json');
-  const getCallOptions = {
-    method: 'GET',
-    headers: headers,
-  };  
-  const controller = new AbortController();
-  const signal = controller.signal;
   const currentRoleId = sessionStorage.getItem('RoleId');
 
   const openPopup = (props) => {
@@ -50,7 +40,6 @@ function UserDetails() {
   };
 
 const setRole = (e)=>{
-  debugger
   updateFormInput({ ...formInput, roleId: e.target.value,
     userRoles: formInput.userRoles.map((role) =>
       role.id === formInput.id
@@ -74,12 +63,9 @@ const setRole = (e)=>{
       getClientData();
     }
   }
-  const getEmployeeData = async () => {
-    const url = new URL(apiUrl + '/Admin/GetEmployeebyId');
-    url.searchParams.append('id', paramUserId);
 
-    const response = await fetch(url, getCallOptions, { signal });
-    const data = await response.json();
+  const getEmployeeData = async () => {
+    const data = await commonServices.HttpGetbyId(paramUserId, '/Admin/GetEmployeebyId');
     setEmployeeData(data[0].projectAssignedToUsers);
     updateFormInput({
       id: data[0].id,
@@ -93,11 +79,7 @@ const setRole = (e)=>{
   }
 
   const getClientData = async () => {
-    const url = new URL(apiUrl + '/Admin/GetClientDatabyId');
-    url.searchParams.append('id', paramUserId);
-
-    const response = await fetch(url, getCallOptions, { signal });
-    const data = await response.json();
+    const data = await commonServices.HttpGetbyId(paramUserId, '/Admin/GetClientDatabyId');
     setClientData(data[0].company.companyProjects);
     updateFormInput({
       id: data[0].id,
@@ -113,14 +95,7 @@ const setRole = (e)=>{
   }
 
   const getAdminData = async () => {
-    debugger
-    const url = new URL(apiUrl + '/Admin/GetAdminDatabyId');
-    url.searchParams.append('id', paramUserId);
-
-    const response = await fetch(url, getCallOptions, { signal });
-    const data = await response.json();
-    debugger
-    console.log('admin', data);
+    const data = await commonServices.HttpGetbyId(paramUserId, '/Admin/GetAdminDatabyId');
     setLeadData(data[0]);
     updateFormInput({
       id: data[0].id,
@@ -147,16 +122,8 @@ const setRole = (e)=>{
           Email:formInput.email,
           IsActive:formInput.isActive,
           UserRoles:formInput.userRoles
-      }
-  
-      const postCallOptions = {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify(updateUserDTO)
-      };  
-  
-      const url = new URL(apiUrl + '/Admin/UpdateUserById');
-      const response = await fetch(url,postCallOptions)
+      }  
+      await commonServices.HttpPost(updateUserDTO,'/Admin/UpdateUserById')
       setAlert({type: 'success', msg: "User updated successfully!" });
       onLoad();
       

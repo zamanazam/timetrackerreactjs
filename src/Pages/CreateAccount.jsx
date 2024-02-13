@@ -1,54 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { apiUrl, ClientRoleId, SuperAdminRoleId } from '../GlobalFile';
+import { ClientRoleId, SuperAdminRoleId } from '../GlobalFile';
 import Alert from '../Components/Alert';
 import LoadingSpinner from '../Components/LoadingSpinner';
 import CustomFields from '../Components/CustomFields';
+import commonServices from '../Services/CommonServices';
+import { useNavigate } from "react-router-dom";
+
 export default function CreateAccount() {
     const [isLoading, setIsLoading] = useState(true);
     const [alert, setAlert] = useState(null);
-    const [roles, allRoles] = useState(null);
-    const [companies, allCompanies] = useState(null);
+    const [roles, allRoles] = useState([]);
+    const [companies, allCompanies] = useState([]);
     const [selectedRole, setSelectedRole] = useState(null);
     const [selectedCompany, setSelectedCompany] = useState(null);
     const [formInput, updateFormInput] = useState({})
     const [samePasswords,setPasswordsState] = useState(true);
-    
-    const token = sessionStorage.getItem('Token');
-    const headers = new Headers();
-    headers.append('Authorization', 'Bearer ' + token);
-    headers.append('Content-Type', 'application/json');
+    const navigate = useNavigate();
 
     const GetRoles = async () => {
-        try {
-            const url = new URL(apiUrl + '/Admin/GetRoles');
-            const options = {
-                method: 'GET',
-                headers: headers,
-            };
-
-            const response = await fetch(url, options);
-            const data = await response.json();
-            allRoles(data);
-        } catch (error) {
-            console.error('Error fetching roles:', error);
-        }
+            allRoles(await commonServices.HttpGet(null,'/Admin/GetRoles'));
     };
 
     const GetCompanies = async () => {
-        try {
-            const url = new URL(apiUrl + '/Admin/GetCompanyName');
-            const options = {
-                method: 'GET',
-                headers: headers,
-            };
-
-            const response = await fetch(url, options);
-            const data = await response.json();
-            console.log('rol',data);
-            allCompanies(data);
-        } catch (error) {
-            console.error('Error fetching companies:', error);
-        }
+            allCompanies(await commonServices.HttpGet(null,'/Admin/GetCompanyName'));
     };
 
     useEffect(() => {
@@ -75,7 +49,6 @@ export default function CreateAccount() {
 
 
     const saveUser = async (event) => {
-        debugger
         event.preventDefault();
         setIsLoading(true);
         setPasswordsState(true);
@@ -85,8 +58,6 @@ export default function CreateAccount() {
             return null;
         }
 
-        const url = new URL(apiUrl + '/Admin/AddUser');
-
             let AddUserDTO = {
                 Name: formInput.firstName + formInput.lastName,
                 Email: formInput.email,
@@ -94,17 +65,11 @@ export default function CreateAccount() {
                 ForRole:formInput.forRole,
                 CompanyId:formInput.companyId
             }
-            const options = {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify(AddUserDTO)
-            };
-            const response = await fetch(url, options);
-            const data = await response.json();
+            var data = await commonServices.HttpPost(AddUserDTO,'/Admin/AddUser')
             setIsLoading(false);
-            console.log('res',data);
             if(data.statusCode ==200){
                 setAlert({ type: 'success', msg: 'User created successfully!' });
+                navigate('/users');
             }else{
                 setAlert({ type: 'danger', msg: 'User creating failed!' });
             }
@@ -162,47 +127,26 @@ export default function CreateAccount() {
                                             </div>
                                         </div>
                                         <div className='row mb-3'>
-                                            {roles != null ?
+                                            {roles.length > 0 &&
                                                 <div className="col-md-6">
                                                     <div className="form-floating mb-3 mb-md-0">
                                                         <CustomFields classField="form-select" type="select" placeholder=" " onChange={e => handleRoleChange(e)}
                                                             optionsArray={roles} hideOption={SuperAdminRoleId}>
                                                          </CustomFields>
-                                                        {/* <select className="form-select" id="inputRole" onChange={handleRoleChange}>
-                                                            {roles.filter(role => role.id !== SuperAdminRoleId)
-                                                                .map((role, index) => (
-                                                                    <option key={index} value={role.id}>
-                                                                            {role.name}
-                                                                    </option>
-                                                                ))
-                                                            }
-                                                        </select> */}
                                                         <label htmlFor="inputRole">Roles</label>
                                                     </div>
                                                 </div>
-                                            :
-                                                null
                                             }
 
-                                            {selectedRole == ClientRoleId && companies != null
-                                            ? 
+                                            {selectedRole == ClientRoleId && companies.length > 0 && 
                                                 <div className="col-md-6">
                                                     <div className="form-floating mb-3 mb-md-0">
                                                         <CustomFields classField="form-select" type="select" placeholder=" " onChange={e => handleCompanyChange(e)}
                                                             optionsArray={companies} hideOption={null}>
                                                          </CustomFields>
-                                                        {/* <select className="form-select" id="inputCompany" onChange={handleCompanyChange}>
-                                                        {companies.map((company, index) => (
-                                                            <option key={index} value={company.id}>
-                                                                {company.name}
-                                                            </option>
-                                                        ))}
-                                                        </select> */}
                                                         <label htmlFor="inputCompany">Company</label>
                                                     </div>
                                                 </div>
-                                            :
-                                                null
                                             }
                                         </div>
                                         <div className="mt-4 mb-0">

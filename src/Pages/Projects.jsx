@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { apiUrl, EmployeeRoleId, ClientRoleId, LeadRoleId } from "../GlobalFile";
+import {EmployeeRoleId, ClientRoleId, LeadRoleId } from "../GlobalFile";
 import { useNavigate } from "react-router-dom";
+import LoadingSpinner from "../Components/LoadingSpinner";
+import commonServices from "../Services/CommonServices";
 
 function Projects() {
     const [AllProjects, SetProjects] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const currentUserId = sessionStorage.getItem('UserId');
     const currentRoleId = sessionStorage.getItem('RoleId');
@@ -14,7 +17,7 @@ function Projects() {
         }
     }, [AllProjects]);
 
-    const GetAllProjects = (page = 1) => {
+    const GetAllProjects = async (page = 1) => {
         var requestedUrl = "";
         var searchProjectsObj = {
             'Page': page,
@@ -33,24 +36,9 @@ function Projects() {
         if (currentRoleId === ClientRoleId) {
             requestedUrl = "/Project/GetClientProjects";
         }
-        const token = sessionStorage.getItem('Token');
-        const url = new URL(apiUrl + requestedUrl);
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(searchProjectsObj)
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                SetProjects(data.results);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
+        var data = await commonServices.HttpPost(searchProjectsObj,requestedUrl);
+        setIsLoading(false);
+        SetProjects(data.results);
     }
 
     const projectDetail = (id) => {
@@ -62,6 +50,7 @@ function Projects() {
     }
     return (
         <div className="container">
+        {isLoading && <LoadingSpinner />}
             <h1 className="mt-4 mb-4">Projects</h1>
             {AllProjects !== null &&
             <>
