@@ -5,7 +5,6 @@ import PopUps from "../Components/PopUps";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import Alert from "../Components/Alert";
 import CustomFields from "../Components/CustomFields";
-import companyServices from "../Services/CompanyServices";
 import commonServices from "../Services/CommonServices";
 const Companies = () => {
     const [AllCompanies, setCompaniesData] = useState([]);
@@ -59,22 +58,7 @@ const Companies = () => {
     const GetAllCompanies = async () => {
             // setIsLoading(true);
             const newUrl = apiUrl + '/Company/GetAllComapnies';
-
-            const url = new URL(newUrl);
-            url.searchParams.append('Page', pagination.Page);
-            url.searchParams.append('PageSize', pagination.PageSize);
-
-            const headers = new Headers();
-            headers.append('Authorization', 'Bearer ' + token);
-            headers.append('Content-Type', 'application/json');
-
-            const options = {
-                method: 'GET',
-                headers: headers,
-            };
-             const response = await fetch(url, options);
-             const data = await response.json();
-            //var data = await commonServices.HttpGet(pagination,'/Company/GetAllComapnies');
+            var data = await commonServices.HttpGet(pagination,'/Company/GetAllComapnies');
                 setPagination({
                     Page: data?.page,
                     PageSize: data?.pageSize,

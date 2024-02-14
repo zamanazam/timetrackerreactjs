@@ -11383,3 +11383,30 @@ td.ShowHours:hover div.ToShowHours {
 div.show-ranges {
   display: none;
 }
+
+div.ToShowHours {
+    display: none;
+}
+
+td.ShowHours:hover div.ToShowHours {
+    display: block;
+    font-size: medium;
+}
+
+div.ToShowEmployeeName {
+    display: none;
+}
+
+td.ShowEmployees:hover div.ToShowEmployeeName {
+    display: block;
+    font-size: medium;
+}
+
+div.ToShowLogs {
+    display: none;
+}
+
+td.ShowLogs:hover div.ToShowLogs {
+    display: block;
+    font-size: medium;
+}

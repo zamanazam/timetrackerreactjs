@@ -13,6 +13,7 @@ import LayoutPage from './Layout/LayoutPage';
 import LogInLayout from './Layout/LogInLayout';
 import UserDetails from './Pages/UserDetails';
 import Dashboard from './Pages/Dashboard';
+import ProjectStatus from './Pages/ProjectStatus';
 function App() {
   const PrivateRoute = ({ element, ...props }) => {
     const token = sessionStorage.getItem('Token');
@@ -57,6 +58,7 @@ function App() {
                 <Route exact path="/projects" element={<PrivateRoute element={<Projects showAlert={showAlert} changeLoaderState={changeLoaderState}/>} />} />
                 <Route exact path="/ProjectDetails/:id" element={<PrivateRoute element={<ProjectDetails showAlert={showAlert} changeLoaderState={changeLoaderState}/>} />} />
                 <Route exact path="/ProjectTimeLogs/:projectId/:AssigneeId" element={<PrivateRoute element={<ProjectTimeLogs showAlert={showAlert} changeLoaderState={changeLoaderState}/>} />} />
+                <Route exact path="/ProjectStatus/:status" element={<PrivateRoute element={<ProjectStatus showAlert={showAlert} changeLoaderState={changeLoaderState}/>} />} />
                 <Route path="/createAccount" element={<PrivateRoute element={<CreateAccount />} />}/>
               </Route>
         </Routes>

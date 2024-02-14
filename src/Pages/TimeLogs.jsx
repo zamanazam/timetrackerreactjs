@@ -39,21 +39,11 @@ const ProjectTimeLogs = () => {
         Total: 10,
         TotalPages: 1
     });
-
+    const [selectAll, setSelectAll] = useState(false);
+    const [selectedRows, setSelectedRows] = useState([]);
+    let showButtons = selectedRows.length > 0;
     const handleDateRange = async (ranges) => {
-        // if (selectedRange === 'startDate') {
-        //     setDateRange((prevDateRange) => ({ ...prevDateRange, startDate: ranges.startDate }));
-        //     setSelectedRange('endDate');
-        //   } else {
-        //     setDateRange((prevDateRange) => ({ ...prevDateRange, endDate: ranges.endDate }));
-        //     setSelectedRange('startDate');
-        //   }
           setDateRange(prevDateRange=>({...prevDateRange, startDate: ranges.startDate,endDate: ranges.endDate }));
-        // setFormInput(prevFormInput => ({
-        //     ...prevFormInput,
-        //     startDate: ranges.startDate,
-        //     endDate: ranges.endDate
-        // }))
     };
 
     const upDateDateRange = ()=>{
@@ -69,7 +59,8 @@ const ProjectTimeLogs = () => {
         var UserId = null;
         var firstDate = dateRange?.startDate;
         var lastDate = dateRange?.endDate;
-
+        console.log('first',firstDate);
+        console.log('first',lastDate);
         EmployeeId = AssigneeId;
         setProjectAssigneeId(AssigneeId);
         if (currentRoleId == AdminRoleId && AssigneeId == 'undefined') {
@@ -106,10 +97,10 @@ const ProjectTimeLogs = () => {
                 PageSize: data?.pageSize,
                 Total: data?.total,
                 TotalPages: data?.totalPages
-            })
+            });
+            setSelectedRows([]);
             setTimeLogsData(data.results);
         }catch(error){
-            console.log('error',error);
             setAlert({ type: 'danger', msg: error.message });
         }
         setIsLoading(false);
@@ -214,31 +205,8 @@ const ProjectTimeLogs = () => {
 
     const DeleteTimeLog = async (id) => {
         setIsLoading(true);
-        // const url = new URL(apiUrl + '/ProjectTimeLogs/DeleteTimeLogsbyId?id=' + id);
-        // fetch(url, {
-        //     method: 'Delete',
-        //     headers: {
-        //         'Authorization': 'Bearer ' + token,
-        //         'Accept': 'application/json',
-        //         'Content-Type': 'application/json',
-        //     }
-        // }).then((response) => response.json())
-        //     .then((data) => {
-        //         setUpdateButton(false);
-        //         if (data.statusCode == 200) {
-        //             setAlert({ type: 'success', msg: "TimeLog Deleted Successfully!" });
-        //         }
-        //         GetTimeLogs();
-        //         setIsLoading(false);
-        //         closePopup();
-
-        //     })
-        //     .catch((error) => {
-        //         setAlert({ type: 'danger', msg: "TimeLog Deleting Failed!" });
-        //     });
-
             try{
-                    var data = await commonServices.HttpPost(id,'/ProjectTimeLogs/DeleteTimeLogsbyId');
+                    var data = await commonServices.HttpDelete(id,'/ProjectTimeLogs/DeleteTimeLogsbyId');
                     setUpdateButton(false);
                     if (data.statusCode == 200) {
                         setAlert({ type: 'success', msg: "TimeLog Deleted Successfully!" });
@@ -250,10 +218,6 @@ const ProjectTimeLogs = () => {
                     setAlert({ type: 'danger', msg: "TimeLog Deleting Failed!" });
             }
     };
-
-    const [selectAll, setSelectAll] = useState(false);
-    const [selectedRows, setSelectedRows] = useState([]);
-    const showButtons = selectedRows.length > 0;
 
     const handleSelectAll = () => {
         setSelectAll(!selectAll);
@@ -303,10 +267,6 @@ const ProjectTimeLogs = () => {
         }
     };
 
-    const formatDate = (date) => {
-        const options = { month: 'numeric', day: 'numeric', year: 'numeric' };
-        return date.toLocaleDateString('en-US', options);
-    };
     return (
         <>
             {popupProps && (
@@ -384,13 +344,13 @@ const ProjectTimeLogs = () => {
                                             type="text"
                                             id="datePickerInput"
                                             placeholder="Select Date Range"
-                                            className="form-control text-center"
-                                            value={`${formatDate(dateRange?.startDate)} - ${formatDate(dateRange?.endDate)}`}
-                                            onChange={() => { }}
+                                            className="form-control"
+                                            value={`${dateRange?.startDate?.toLocaleDateString('en-US', { day: 'numeric',month: 'short', year: 'numeric' })} - ${dateRange?.endDate?.toLocaleDateString('en-US', { day: 'numeric',month: 'short', year: 'numeric' })}`}
+                                            onChange={(e)=>setDatePickerVisible(true)}
                                             onClick={() => setDatePickerVisible(true)}
                                         />
                                         {datePickerVisible && (
-                                            <div className="mt-1 ml-4 pb-3" style={{ position: 'relative' }}>
+                                            <div className="mt-1 bg-body ml-4 pb-3" style={{ position: 'relative' }}>
                                                   <DateRangePicker
                                                     ranges={[dateRange]}
                                                     onChange={(selected) => {
@@ -398,24 +358,10 @@ const ProjectTimeLogs = () => {
                                                         handleDateRange(range1);
                                                     }}
                                                     />
-                                                {/* <DateRangePicker
-                                                    ranges={[dateRange]}
-                                                    calendarAriaLabel="Toggle calendar"
-                                                    clearAriaLabel="Clear value"
-                                                    dayAriaLabel="Day"
-                                                    monthAriaLabel="Month"
-                                                    nativeInputAriaLabel="Date"
-                                                    yearAriaLabel="Year"
-                                                    value={dateRange}
-                                                    format="dd-MM-yyyy"
-                                                    className="border rounded-2"
-                                                    onChange={(selected) => {
-                                                        const { range1 } = selected;
-                                                        const { startDate, endDate } = range1;
-                                                        handleDateRange(range1);
-                                                    }}
-                                                /> */}
-                                                <button className="rounded-3 mb-2 btn-primary justify-content-end align-bottom" onClick={upDateDateRange} style={{ position: 'absolute', bottom: 0, right: 5 }}>
+                                                <button className="rounded-3 me-1 mb-2 btn-primary justify-content-end align-bottom" onClick={(e) => setDatePickerVisible(false)} style={{ position: 'absolute', bottom: 0, left: 245 }}>
+                                                    Cancel
+                                                </button>
+                                                <button className="rounded-3 me-1 mb-2 btn-primary justify-content-end align-bottom" onClick={upDateDateRange} style={{ position: 'absolute', bottom: 0, right: 5 }}>
                                                     Apply
                                                 </button>
                                             </div>
@@ -504,8 +450,8 @@ const ProjectTimeLogs = () => {
                                                             </td>
                                                             <td className="text-center">
                                                                 {Log.isApproved == 0 && Log.isRejected == 0 && <a title="NotApproved/NotRejected"></a>}
-                                                                {Log.isRejected == 1 && <a className="text-center" title="Approved"><i className="fa fa-warning" style={{ fontsize: '30px', color: 'red' }}></i></a>}
-                                                                {Log.isApproved == 1 && <a className="text-center" title="Rejected"><i className="fa fa-check" style={{ fontsize: '30px', color: 'green' }}></i></a>}
+                                                                {Log.isRejected == 1 && <a className="text-center" title="Rejected"><i className="fa fa-warning" style={{ fontsize: '30px', color: 'red' }}></i></a>}
+                                                                {Log.isApproved == 1 && <a className="text-center" title="Approved"><i className="fa fa-check" style={{ fontsize: '30px', color: 'green' }}></i></a>}
                                                             </td>
                                                         </tr>
                                                     ))}

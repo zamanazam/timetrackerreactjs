@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { apiUrl, statusArray } from "../GlobalFile";
-import { json, useParams } from "react-router-dom";
+import { statusArray } from "../GlobalFile";
+import { useParams } from "react-router-dom";
 import CustomButton from "../Components/CustomButton";
 import CustomFields from "../Components/CustomFields";
 import Alert from "../Components/Alert";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import PopUps from "../Components/PopUps";
-import projectServices from "../Services/ProjectServices";
 import commonServices from "../Services/CommonServices";
 function ProjectDetails() {
     const [popupProps, setPopupProps] = useState(null);
@@ -153,7 +152,7 @@ function ProjectDetails() {
                         title={popupProps.title || null}
                         message={popupProps.message || null}
                         buttontitle={popupProps.buttontitle || null}
-                        onClose={closePopup}
+                        onClose={popupProps.onClose}
                         onClick={popupProps.onClick} />)}
 
                 {isLoading && <LoadingSpinner />}
@@ -257,6 +256,7 @@ function ProjectDetails() {
                                 title: 'Assing Project',
                                 buttontitle: 'Save',
                                 onClick: assignPoject,
+                                onClose:closePopup,
                             })} label="Asssign" icon={<span className="me-2"><i className="fa fa-plus" style={{ fontsize: '20px' }}></i></span>}></CustomButton>
                     </div>
                 </div>

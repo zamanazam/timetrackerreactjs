@@ -6,8 +6,6 @@ import PopUps from "../Components/PopUps";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import Alert from "../Components/Alert";
 import CustomFields from "../Components/CustomFields";
-import companyServices from "../Services/CompanyServices";
-import projectServices from "../Services/ProjectServices";
 import commonServices from "../Services/CommonServices";
 
 const CompanyDetail = () => {
@@ -102,7 +100,9 @@ const CompanyDetail = () => {
                     id: companyId
                 }
                 var response = await commonServices.HttpPost(UpdateCompanyDTO,'/Company/UpdateCompanybyId');
+                setIsLoading(false);
                     if (response.statusCode == 200) {
+                        console.log('showAlert',1);
                         setAlert({ type: 'success', msg: "Company Updated successfully!" });
                         GetCompanyDetails();
                     } else {
@@ -111,7 +111,6 @@ const CompanyDetail = () => {
             }catch(error){
                     setAlert({ type: 'danger', msg: error.message });
             }
-            setIsLoading(true);
     };
 
     const handleCompanyStatus = (e) => {
@@ -122,9 +121,10 @@ const CompanyDetail = () => {
         navigate('/ProjectDetails/' + projectId);
     }
 
+
     return (
         <>
-            {alert && <Alert type={alert.type} message={alert.msg} />}
+        {alert && <Alert type={alert.type} message={alert.msg} />}
             <div className="container">
                 {popupProps && (
                     <PopUps                        inputs={popupProps.inputs||null}
@@ -132,8 +132,8 @@ const CompanyDetail = () => {
                     title={popupProps.title || null}
                     message={popupProps.message || null}
                     buttontitle={popupProps.buttontitle || null}
-                    onClose={closePopup}
-                    onClick={saveProject} />)}
+                    onClose={popupProps.onClose}
+                    onClick={popupProps.onClick} />)}
                 {isLoading && <LoadingSpinner />}
 
                 <h1 className="mt-4 mb-4">Company Details</h1>
@@ -170,16 +170,18 @@ const CompanyDetail = () => {
                         <button className="btn btn-success mt-4 float-end" onClick={() => UpdateCompany()}><span className="me-2"><i className="fas fa-redo"></i></span>Update</button>
 
                         <button type="button" href="#" className="btn btn-warning mt-4 float-end me-2"
-                            onClick={() => openPopup({
-                                inputs: [
-                                    { name:'Name', InputTitle: 'Name',classField:'form-control mb-2', type: 'text'},
-                                    { name:'Description', InputTitle: 'Description',classField:'form-control mb-2', type: 'textarea' },
-                                ],
-                                show: true,
-                                title: 'Create Project',
-                                buttontitle: 'Save',
-                                onClick: saveProject,
-                            })}>
+                            onClick={() => 
+                                openPopup({
+                                    inputs: [
+                                        { name:'Name', InputTitle: 'Name',classField:'form-control mb-2', type: 'text'},
+                                        { name:'Description', InputTitle: 'Description',classField:'form-control mb-2', type: 'textarea' },
+                                    ],
+                                    show: true,
+                                    title: 'Create Project',
+                                    buttontitle: 'Save',
+                                    onClick: saveProject,
+                                    onClose: closePopup,
+                                })}>
                             <span className="me-2">
                                 <i className="fa fa-plus"></i>
                             </span>Project

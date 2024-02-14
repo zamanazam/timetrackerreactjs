@@ -78,6 +78,7 @@ function CustomFields({ name, classField, type,checked ,placeholder, onChange, v
                     selectedValues={selectedItems}
                     onSelect={handleSelect}
                     onRemove={handleRemove}
+                    placeholder={placeholder}
                 />
             )}
         </>

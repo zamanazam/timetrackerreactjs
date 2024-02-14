@@ -18,6 +18,7 @@ function Projects() {
     }, [AllProjects]);
 
     const GetAllProjects = async (page = 1) => {
+        setIsLoading(true);
         var requestedUrl = "";
         var searchProjectsObj = {
             'Page': page,
@@ -37,6 +38,7 @@ function Projects() {
             requestedUrl = "/Project/GetClientProjects";
         }
         var data = await commonServices.HttpPost(searchProjectsObj,requestedUrl);
+        console.log('projects',data);
         setIsLoading(false);
         SetProjects(data.results);
     }
@@ -61,7 +63,7 @@ function Projects() {
                                     <div className="mb-4">
                                         Assigned To Me:
                                     </div>
-                                    {AllProjects.filter(project => project.assigneeId == currentUserId && project.totalTimeLogs !== 0).map((project, index) => (
+                                    {AllProjects.filter(project => project.assigneeId == currentUserId).map((project, index) => (
                                         <div className="col-lg-4 col-md-6 col-sm-12 mb-5" key={index}>
                                             <div className="card">
                                                 <div className="card-header">
@@ -175,7 +177,8 @@ function Projects() {
                         {currentRoleId === ClientRoleId && 
                             <section>
                                 <div className="row mb-4">
-                                    {AllProjects.map((project, key) => (
+                                {AllProjects.filter(project => project.clientProjectTimes.some(timelogs => timelogs.totalHours !== 0)).map((project, key) => (
+                                // {AllProjects.filter(project => project.clientProjectTimes.length > 0).map((project, key) => (
                                         <div className="col-lg-4 col-md-6 col-sm-12 mb-5" key={key}>
                                             <div className="card h-100">
                                                 <div className="card-header">
@@ -185,20 +188,23 @@ function Projects() {
                                                     </div>
                                                 </div>
                                                 <div className="card-body bg-gradient">
-                                                    {project.clientProjectTimes !== null &&
+                                                    {/* {project.clientProjectTimes.length > 0 && */}
                                                         <div>
-                                                            <div className="d-flex">
-                                                                <p>Employee</p>
-                                                                <p className="ms-auto">Logs</p>
-                                                                <p className="ms-auto">Hours</p>
+                                                            <div className="row">
+                                                                <p className="col text-center">Employee</p>
+                                                                <p className="col text-center">Logs</p>
+                                                                <p className="col text-center">Hours</p>
                                                             </div>
 
                                                             {project.clientProjectTimes.map((timelogs, innerKey) => (
                                                                 <div key={innerKey}>
                                                                     {timelogs.totalTimeLogs != 0 &&
-                                                                        <div className="row">
+                                                                        <div className="row mt-2">
                                                                             <div className="col text-center">
-                                                                                <a href="#" className="text-decoration-none text-body" onClick={() => projectTimeLogs(project.projectId, timelogs.assigneeId)}>{timelogs.employeeName}</a>
+                                                                            {/* <a href={`/ProjectTimeLogs/{project.projectId}/{timelogs.assigneeId}`} className="text-decoration-none text-body" onClick={() => projectTimeLogs(project.projectId, timelogs.assigneeId)}>{timelogs.employeeName}</a> */}
+                                                                            <a href={`/ProjectTimeLogs/${project.projectId}/${timelogs.assigneeId}`} className="text-decoration-none text-body">
+                                                                                {timelogs.employeeName}
+                                                                            </a>
                                                                             </div>
                                                                             <div className="col text-center">
                                                                                 <p className="ms-auto">{timelogs.totalTimeLogs}</p>
@@ -211,7 +217,7 @@ function Projects() {
                                                                 </div>
                                                             ))}
                                                         </div>
-                                                    }
+                                                    {/* } */}
                                                 </div>
                                                 <div className="card-footer text-center">
                                                     {new Date(project.createdOn).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true })}

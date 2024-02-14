@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { apiUrl, allRoles, paginationArray, getPagesTags, getEntriesOfPagination, getStartPointOfPagination, SuperAdminRoleId } from "../GlobalFile";
+import { paginationArray, getPagesTags, getEntriesOfPagination, getStartPointOfPagination, SuperAdminRoleId } from "../GlobalFile";
 import { useNavigate } from "react-router-dom";
 import CustomFields from "../Components/CustomFields";
 import Chart from "../Components/Chart";
@@ -10,31 +10,28 @@ function Dashboard() {
   const [ProjectDataObj, setProjectData] = useState(null);
   const [RecentLogsArray, setRecentTimeLogs] = useState([]);
   const [CompaniesData, setCompaniesData] = useState([]);
-  const [multiAxisChartData, setMultiAxisChartData] = useState([]);
   const [datePickerVisible, setDatePickerVisible] = useState(false);
-  const [dateRange, setDateRange] = useState({ startDate: new Date(), endDate: new Date() });
-
+  const [chartSearchObj, setChartSearchObj] = useState({ startDate: new Date(), endDate: new Date() });
   const navigate = useNavigate();
-
+  var currentRoleId = sessionStorage.getItem('RoleId');
   const [multiAxisChartFilterData, setMultiAxisChartFilterData] = useState({
     Employees: [],
     Projects: [],
     DateFrom: null,
     DateTo: null
   });
-
   const handleDateRange = async (ranges) => {
-    setDateRange(prevDateRange => ({ ...prevDateRange, startDate: ranges.startDate, endDate: ranges.endDate }));
+    setChartSearchObj(prevDateRange => ({ ...prevDateRange, startDate: ranges.startDate, endDate: ranges.endDate }));
   };
 
   const upDateDateRange = () => {
-    if (dateRange?.startDate && dateRange?.endDate) {
+    if (chartSearchObj?.startDate && chartSearchObj?.endDate) {
       setDatePickerVisible(false);
       GetMultiValueAxisChart();
     }
   }
 
-  const getDayNamesbydifference = (inputDate) =>{
+  const getDayNamesbydifference = (inputDate) => {
     inputDate = new Date(inputDate);
     var todaydate = new Date();
     var diff = todaydate - inputDate;
@@ -44,19 +41,19 @@ function Dashboard() {
     if (DifferenceDays == 1) return "Yesterday";
 
     if (DifferenceDays > 1 && DifferenceDays <= 7)
-            val = inputDate.toLocaleString("default", { weekday: "long" });
+      val = inputDate.toLocaleString("default", { weekday: "long" });
 
     if (DifferenceDays > 8 && DifferenceDays <= 30)
-        val = inputDate.toLocaleString('en-us', { day: 'numeric', month: 'short' });
+      val = inputDate.toLocaleString('en-us', { day: 'numeric', month: 'short' });
 
     if (DifferenceDays > 30 && DifferenceDays <= 365)
-            val = inputDate.toLocaleString('en-us', { day: 'numeric', month: 'short', year: 'numeric' });
+      val = inputDate.toLocaleString('en-us', { day: 'numeric', month: 'short', year: 'numeric' });
 
     if (DifferenceDays > 365)
-            val = inputDate.toLocaleString('en-us', { month: 'short', year: 'numeric' });
+      val = inputDate.toLocaleString('en-us', { month: 'short', year: 'numeric' });
 
     return val;
-}
+  }
 
   const [formInput, updateFormInput] = useState({
     name: null,
@@ -64,10 +61,11 @@ function Dashboard() {
     startFrom: new Date(),
     endDate: new Date(),
     data: [],
-    diff: 13,
+    diff: Math.round((new Date(chartSearchObj?.endDate) - new Date(chartSearchObj?.startDate)) / (1000 * 60 * 60 * 24)),
     width: "100%",
     height: "100%"
   });
+
   const [pagination, setPagination] = useState({
     Page: 1,
     PageSize: 10,
@@ -76,26 +74,20 @@ function Dashboard() {
   });
 
   useEffect(() => {
-    getDashboardData();
+    GetMultiValueAxisChart();
     GetDropDowns();
-  }, [formInput.startFrom, formInput.endDate]);
+    setChartSearchObj(prevDateRange => ({ ...prevDateRange, startDate: new Date(), endDate: new Date() }));
+
+  }, [chartSearchObj?.Employee, chartSearchObj?.Project]);
 
   useEffect(() => {
     GetCompanywithProject();
   }, [pagination.Page, pagination.PageSize]);
 
   useEffect(() => {
-    setMultiAxisChartData(prevState => ({
-      ...prevState,
-      data: formInput.data
-    }));
-  }, []);
-
-  function getDashboardData() {
     ProjectsData();
     RecentTimeLogs();
-    GetMultiValueAxisChart();
-  }
+  }, []);
 
   const RecentTimeLogs = async () => {
     setRecentTimeLogs(await commonServices.HttpGet(null, '/Home/GetRecentTimeLogs'));
@@ -123,17 +115,19 @@ function Dashboard() {
   };
 
   const NavigatetoProjects = (id) => {
-    navigate('/ProjectsStatusWise/id?=' + id);
+    if(currentRoleId == SuperAdminRoleId){
+        navigate('/ProjectStatus/' + id);
+    }
   }
 
   const GetCompanywithProject = async () => {
     var data = await commonServices.HttpGet(pagination, '/Admin/GetCompanyProjects');
     setCompaniesData(data.results);
     setPagination({
-      Page: data.page,
-      PageSize: data.pageSize,
-      Total: data.total,
-      TotalPages: data.totalPages
+      Page: data?.page || 1,
+      PageSize: data?.pageSize || 10,
+      Total: data?.total || 0,
+      TotalPages: data?.totalPages || 0
     })
   }
 
@@ -144,114 +138,121 @@ function Dashboard() {
       Employees: response.userNameDTOs,
       Projects: response.projectNamesDTOs
     }));
-    //setProjectData(response);
   }
 
   const GetMultiValueAxisChart = async () => {
     setDatePickerVisible(false);
-    //  const dateFrom = new Date(dateRange?.startFrom);
-    //  dateFrom.setDate(dateRange.startFrom.getDate() - 60);
     let searchChartDTO = {
-      DateFrom: dateRange?.startDate,
-      DateTo: dateRange?.endDate,
-      Employee: [],
-      Project: [],
-      RoleId: null
+      DateFrom: chartSearchObj?.startDate,
+      DateTo: chartSearchObj?.endDate,
+      Employee: chartSearchObj?.Employee ? chartSearchObj?.Employee.map(x => x.id) : [],
+      Project: chartSearchObj?.Project ? chartSearchObj?.Project.map(x => x.id) : [],
+      RoleId: currentRoleId
     };
-
     let result = await commonServices.HttpPost(searchChartDTO, '/Home/ChartDatabyCondition');
-    console.log('chart', result);
-    updateFormInput(prevState => ({ ...prevState, data: result }));
+    updateFormInput(prevState => (
+      { ...prevState, data: result ,
+        diff  : Math.round((new Date(chartSearchObj?.endDate) - new Date(chartSearchObj?.startDate)) / (1000 * 60 * 60 * 24)),
+        startFrom :  chartSearchObj?.startDate,
+        endDate : chartSearchObj?.endDate
+      }));
   }
 
-  const formatDate = (date) => {
-    const options = { month: 'numeric', day: 'numeric', year: 'numeric' };
-    return date.toLocaleDateString('en-US', options);
-  };
   return (
-    <div className='container' onLoad={getDashboardData}>
-      <h5>Dashboard</h5>
-      <div className="row mb-4">
+    <div className='container'>
+      <div className="row mt-4 mb-4">
+        <h1 className="float-start">Dashboard</h1>
+      </div>
+      {/* Projects status section */}
+      <div className="row mb-2">
         <div className="col-xl-3 col-md-6">
           <div className="card mb-4">
             <div className="card-body text-white bg-primary fw-bold">Total</div>
-            <div className="card-footer bg-body d-flex align-items-center justify-content-between" href="#" onClick={() => NavigatetoProjects(1)}>
-              <p className="fw-bold border-0 bg-body text-black text-decoration-none">{ProjectDataObj?.totalProjects}</p>
-              <span className="border-0 bg-body"><i className="fas fa-angle-right"></i></span>
+            <div className="card-footer bg-body" href="#" onClick={() => NavigatetoProjects(1)}>
+              <p className="fw-bold border-0 bg-body text-black-50 float-start">{ProjectDataObj?.totalProjects}</p>
+              <span className="border-0 bg-body float-end"><i className="fas fa-angle-right"></i></span>
             </div>
           </div>
         </div>
+        {currentRoleId == SuperAdminRoleId && 
+        <>
+            <div className="col-xl-3 col-md-6">
+              <div className="card mb-4">
+                <div className="card-body bg-warning text-white fw-bold">In-Progress</div>
+                <div className="card-footer bg-body" href="#" onClick={() => NavigatetoProjects(1)}>
+                  <p className="fw-bold border-0 bg-body text-black-50 float-start">{ProjectDataObj?.totalProjects}</p>
+                  <span className="border-0 bg-body float-end"><i className="fas fa-angle-right"></i></span>
+                </div>
+              </div>
+            </div>
 
-        <div className="col-xl-3 col-md-6">
-          <div className="card mb-4">
-            <div className="card-body bg-warning text-white fw-bold">In-Progress</div>
-            <div className="card-footer bg-body d-flex align-items-center justify-content-between" href="#" onClick={() => NavigatetoProjects(2)}>
-              <p className="fw-bold border-0 bg-body text-black text-decoration-none">{ProjectDataObj?.totalProjects}</p>
-              <span className="border-0 bg-body"><i className="fas fa-angle-right"></i></span>
+            <div className="col-xl-3 col-md-6">
+              <div className="card mb-4">
+                <div className="card-body bg-success text-white fw-bold">BackLog</div>
+                <div className="card-footer bg-body" href="#" onClick={() => NavigatetoProjects(3)}>
+                  <p className="fw-bold border-0 bg-body text-black-50 float-start">{ProjectDataObj?.unAssignedProjects}</p>
+                  <span className="border-0 bg-body float-end"><i className="fas fa-angle-right"></i></span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <div className="col-xl-3 col-md-6">
-          <div className="card mb-4">
-            <div className="card-body bg-success text-white fw-bold">BackLog</div>
-            <div className="card-footer bg-body d-flex align-items-center justify-content-between" href="#" onClick={() => NavigatetoProjects(3)}>
-              <p className="fw-bold border-0 bg-body text-black text-decoration-none">{ProjectDataObj?.unAssignedProjects}</p>
-              <span className="border-0 bg-body"><i className="fas fa-angle-right"></i></span>
+            <div className="col-xl-3 col-md-6">
+              <div className="card mb-4">
+                <div className="card-body bg-danger text-white fw-bold">Pause</div>
+                <div className="card-footer bg-body" href="#" onClick={() => NavigatetoProjects(4)}>
+                  <p className="fw-bold border-0 bg-body text-black-50 float-start">{ProjectDataObj?.blockedProjects}</p>
+                  <span className="border-0 bg-body float-end"><i className="fas fa-angle-right"></i></span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          </>
+        }
 
-        <div className="col-xl-3 col-md-6">
-          <div className="card text-white mb-4">
-            <div className="card-body bg-danger">Pause</div>
-            <div className="card-footer bg-body d-flex align-items-center justify-content-between" href="#" onClick={() => NavigatetoProjects(4)}>
-              <p className="fw-bold border-0 bg-body text-black text-decoration-none">{ProjectDataObj?.blockedProjects}</p>
-              <span className="border-0 bg-body"><i className="fas fa-angle-right"></i></span>
-            </div>
-          </div>
-        </div>
       </div>
 
-
-      <div className="row mb-4">
-        <div className="col-xl-9 col-lg-9 col-md-8 col-sm-12">
-          <div className="row">
-            <div className="col">
-              <CustomFields type="multiselect" className="form-select ms-3" placeholder="Employees" optionsArray={multiAxisChartFilterData.Employees} value={formInput.roleId}
-                onChange={(e) => { updateFormInput((prevFormInput) => ({ ...prevFormInput, Employee: e.target.value })) }}>
-              </CustomFields>
+      {/* Chart and recent timeLogs section */}
+      <div className="row mb-2">
+        <div className="col-xl-9 col-lg-9 col-md-12 col-sm-12">
+          <div className="card border-0">
+            <div className="card-header border-0 bg-primary">
+              <p className="text-white fw-bold">Time Log Charts</p>
             </div>
-            <div className="col">
-              <CustomFields type="multiselect" className="form-select ms-3" placeholder="Projects" optionsArray={multiAxisChartFilterData.Projects} value={formInput.roleId}
-                onChange={(e) => { updateFormInput((prevFormInput) => ({ ...prevFormInput, Project: e.target.value })) }}>
-              </CustomFields>
-            </div>
-            <div className="col">
-              <input type="text" id="datePickerInputs" placeholder="Select Date Range" className="form-control w-100 text-center"
-                value={`${formatDate(dateRange?.startDate)} - ${formatDate(dateRange?.endDate)}`} onChange={() => { }}
-                onClick={() => setDatePickerVisible(true)} />
-              {datePickerVisible && (
-                <div className="mt-1 ml-4 pb-3 border" style={{ position: 'absolute',zIndex : 100 }}>
-                  <DateRangePicker
-                    ranges={[dateRange]}
-                    onChange={(selected) => {
-                      const { range1 } = selected;
-                      handleDateRange(range1);
-                    }}
-                  />
-                  <button className="rounded-3 mb-2 btn-primary justify-content-end align-bottom" onClick={upDateDateRange} style={{ position: 'absolute', bottom: 0, right: 5 }}>
-                    Apply
-                  </button>
+            <div className="card-body bg-light">
+              <div className="row">
+                <div className="col-xl-4 col-lg-4 col-md-12 col-12 mb-2">
+                  <CustomFields type="multiselect" className="form-select ms-3" placeholder="Select Employees" optionsArray={multiAxisChartFilterData.Employees} value={formInput.roleId}
+                    onChange={(e) => { setChartSearchObj((prevFormInput) => ({ ...prevFormInput, Employee: e.target.value })) }}>
+                  </CustomFields>
                 </div>
-              )}
+                <div className="col-xl-4 col-lg-4 col-md-12 col-12 mb-2">
+                  <CustomFields type="multiselect" className="form-select ms-3" placeholder="Select Projects" optionsArray={multiAxisChartFilterData.Projects} value={formInput.roleId}
+                    onChange={(e) => { setChartSearchObj((prevFormInput) => ({ ...prevFormInput, Project: e.target.value })) }}>
+                  </CustomFields>
+                </div>
+                <div className="col-xl-4 col-lg-4 col-md-12 col-12 mb-2">
+                  <input type="text" id="datePickerInputs" className="form-control w-100"
+                    value={`${chartSearchObj?.startDate?.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })} - ${chartSearchObj?.endDate?.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                    onClick={() => setDatePickerVisible(true)} onChange={(e) => setDatePickerVisible(true)} />
+                  {datePickerVisible && (
+                    <div className="mt-1 ml-4 pb-3 border bg-body" style={{ position: 'absolute', zIndex: 100 }}>
+                      <DateRangePicker ranges={[chartSearchObj]} onChange={(selected) => { const { range1 } = selected; handleDateRange(range1); }} />
+                      <button className="rounded-3 me-1 mb-2 btn-primary justify-content-end align-bottom" onClick={(e) => setDatePickerVisible(false)} style={{ position: 'absolute', bottom: 0, left: 245 }}>
+                        Cancel
+                      </button>
+                      <button className="rounded-3 me-1 mb-2 btn-primary justify-content-end align-bottom" onClick={upDateDateRange} style={{ position: 'absolute', bottom: 0, right: 5 }}>
+                        Apply
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <Chart inputs={formInput} ></Chart>
             </div>
           </div>
-          <Chart inputs={formInput} ></Chart>
-          {/*<Chart data={multiAxisChartData} width="100%" height="100%"></Chart> */}
         </div>
-        <div className="col-xl-3 col-lg-3 col-md-4 col-sm-12">
-          <div className="card">
+        <div className="col-xl-3 col-lg-3 col-md-12 col-sm-12">
+          <div className="card h-100">
             <div className="card-header bg-primary">
               <p className="text-white fw-bold">Recent TimeLogs</p>
             </div>
@@ -265,8 +266,8 @@ function Dashboard() {
                         <p className="badge bg-light text-black-50">{RecentLogs.hours}h</p>
                         <p className="border-start border-5 ms-2 ps-4 text-black-50">
                           {RecentLogs.timeLogText}
-                          <span className="fw-bold me-5"> by {RecentLogs.employee}</span>
-                          <span>{getDayNamesbydifference(RecentLogs.sendOn)}</span>
+                          <span className="fw-bold me-4"> by {RecentLogs.employee}</span>
+                          <span className="small">{getDayNamesbydifference(RecentLogs.sendOn)}</span>
                           <br />
                         </p>
                       </div>
@@ -279,21 +280,23 @@ function Dashboard() {
           </div>
         </div>
       </div>
-      <div className="row mt-5">
+      {/* Companies table */}
+      <div className="row mt-3">
+        <div className="col">
         <div className="card mt-4">
           <div className="card-body">
             <div className="datatable-wrapper datatable-loading no-footer sortable searchable fixed-columns">
               <div className="datatable-top">
+                <h5 className="float-start">Projects Chart</h5>
                 <div className="datatable-dropdown">
                   <label>
                     <CustomFields type="select" classField="datatable-selector" value={pagination.PageSize}
                       onChange={(e) => setPagination({ ...pagination, PageSize: e.target.value, Page: 1 })} optionsArray={paginationArray}></CustomFields>
                   </label>
                 </div>
-                <div className="datatable-search">
+                {/* <div className="datatable-search">
                   <CustomFields type="text" classField="form-control" placeholder="Name" value={formInput.name} onChange={(e) => { updateFormInput({ ...formInput, name: e.target.value }) }}></CustomFields>
-                </div>
-
+                </div> */}
               </div>
               <div className="datatable-container">
                 <table id="datatablesSimple" className="datatable-table">
@@ -389,6 +392,7 @@ function Dashboard() {
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>

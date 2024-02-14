@@ -31,4 +31,3 @@ export const getEntriesOfPagination = (pageSize, page, total)=> {
 export const getStartPointOfPagination = (pageSize, page)=> {
     return ((pageSize * page) - pageSize) + 1;
 };
-

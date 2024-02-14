@@ -9,10 +9,6 @@ function PopUps(props) {
     const [isValidEmail, setEmailState] = useState(false);
     const [warning, setWarnings] = useState({});
 
-    // const handleInputChange = (name, value) => {
-    //     setInputValues((prevValues) => ({ ...prevValues, [name]: value }));
-    // };
-
     const handleInputChange = (name, value) => {
         setInputValues((prevValues) => {
             if (inputs.find(input => input.name === name && input.type === "multiselect")) {
@@ -31,6 +27,8 @@ function PopUps(props) {
           }));
       
           props.onClick(selectedValues);
+          console.log('close',props.onClose);
+          //props.onClose();
     };
     return (
 
