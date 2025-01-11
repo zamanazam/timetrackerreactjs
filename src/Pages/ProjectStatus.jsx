@@ -35,7 +35,6 @@ function ProjectStatus(){
             Total: data?.total,
             TotalPages: data?.totalPages
         })
-        console.log('res',data);
         setIsLoading(false);
         SetProjects(data?.results);
     }

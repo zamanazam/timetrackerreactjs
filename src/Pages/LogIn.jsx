@@ -1,8 +1,7 @@
 import React,{useState} from 'react';
-import { apiUrl,SuperAdminRoleId } from '../GlobalFile';
-import { useNavigate } from 'react-router-dom';
+import {SuperAdminRoleId } from '../GlobalFile';
+import {useNavigate } from 'react-router-dom';
 import Alert from "../Components/Alert";
-
 import LoadingSpinner from "../Components/LoadingSpinner";
 import commonServices from '../Services/CommonServices';
 
@@ -38,7 +37,6 @@ function showPassword(){
     };
     try{
             let response = await commonServices.HttpPost(AuthenticateRequest,'/Home/LogIn');
-            console.log(response);
             setIsLoading(false);
             if(response.message){
                 setAlert({ type: 'danger', msg: response.message });
@@ -60,32 +58,6 @@ function showPassword(){
         setIsLoading(false);
         setAlert({ type: 'danger', msg: "LogIn Failed!" });
     }
-        // fetch(apiUrl+'/Home/LogIn', {
-        //     method: 'POST',
-        //     headers: {
-        //       'Content-Type': 'application/json',
-        //     },
-        //     body: JSON.stringify(AuthenticateRequest),
-        //   })
-        //     .then((response) => response.json())
-        //     .then((response) => {
-            // setIsLoading(false);
-            // if(response.id == undefined){
-            //     return false;
-            // }
-            //  sessionStorage.setItem('RoleId',response.roleId);
-            //  sessionStorage.setItem('UserId',response.id);
-            //  sessionStorage.setItem('Token',response.token);
-            //  sessionStorage.setItem('Name',response.name);
-            // if(response.roleId == SuperAdminRoleId){
-            //     navigate("/companies");
-            // }else{
-            //     navigate("/projects");
-            // }
-        // })
-        // .catch((error) => {
-        //     setAlert({ type: 'danger', msg: error.message });
-        // });
  };
 
   return (
@@ -120,9 +92,6 @@ function showPassword(){
                                             </div>
                                         </form>
                                     </div>
-                                    {/* <div className="card-footer text-center py-3">
-                                        <div className="small"><Link to="createAccount">Need an account? Sign up!</Link></div>
-                                    </div> */}
                                 </div>
                             </div>
                         </div>

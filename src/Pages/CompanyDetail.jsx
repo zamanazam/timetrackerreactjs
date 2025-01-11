@@ -102,7 +102,6 @@ const CompanyDetail = () => {
                 var response = await commonServices.HttpPost(UpdateCompanyDTO,'/Company/UpdateCompanybyId');
                 setIsLoading(false);
                     if (response.statusCode == 200) {
-                        console.log('showAlert',1);
                         setAlert({ type: 'success', msg: "Company Updated successfully!" });
                         GetCompanyDetails();
                     } else {

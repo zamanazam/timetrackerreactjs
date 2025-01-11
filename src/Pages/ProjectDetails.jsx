@@ -15,8 +15,6 @@ function ProjectDetails() {
     const { id } = useParams();
     const [formInput, updateFormInput] = useState({});
     const [optionsArray, setEmployeesArray] = useState([]);
-    const [assigneeIds, setAssingee] = useState([]);
-
 
     useEffect(() => {
         GetProjectDetails();
@@ -31,7 +29,6 @@ function ProjectDetails() {
 
     const GetProjectDetails = async () => {
         setIsLoading(true);
-        try{
             var data = await commonServices.HttpGetbyId(id,'/Project/GetProjectDetailsbyId');
             setProjectData(data);
             updateFormInput({
@@ -41,9 +38,6 @@ function ProjectDetails() {
                 employeesProjects: data?.employeesProjects,
                 Assignees: [],
             })
-        }catch(error){
-            setAlert({type: 'danger', msg: "Operation Failed!" });
-        }
         setIsLoading(false);
     }
 
@@ -76,7 +70,6 @@ function ProjectDetails() {
             EmployeesProjects: ProjectData?.employeesProjects
         }
         
-        try{
                 var response = await commonServices.HttpPost(updateProjectDTO,'/Project/UpdateProjectbyIdandAsignee');
                 if (response.statusCode == 200) {
                     GetProjectDetails();
@@ -85,14 +78,10 @@ function ProjectDetails() {
                     setAlert({ type: 'danger', msg: "Error Updating Project!" });
                 }
 
-            }catch(error){
-                setAlert({ type: 'danger', msg: error.message });
-            }
             setIsLoading(false);
     }
     const assignPoject = async (selectedValues) => {
         setIsLoading(true);
-        try{
                 let toAssignEmployees = selectedValues.filter(({ name }) => name === "Assignees").map(({ value }) => (Array.isArray(value) ? value.map(assignee => assignee.id) : value));
                 let inWard = selectedValues.filter(({ name }) => name === "InWard").map(({ value }) => value);
                 let outWard = selectedValues.filter(({ name }) => name === "OutWard").map(({ value }) => value);
@@ -110,11 +99,6 @@ function ProjectDetails() {
                 else{
                     setAlert({ type: 'danger', msg: "Operation Failed!" });
                 }
-            }catch(error)
-            {
-                setIsLoading(false);
-                setAlert({ type: 'danger', msg: "Operation Failed!" });
-            }
             closePopup();
             setIsLoading(false);
             GetProjectDetails();

@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import CustomFields from "../Components/CustomFields";
 import Chart from "../Components/Chart";
 import { DateRangePicker } from "react-date-range";
-import Multiselect from "multiselect-react-dropdown";
 import commonServices from "../Services/CommonServices";
 function Dashboard() {
   const [ProjectDataObj, setProjectData] = useState(null);
@@ -294,9 +293,6 @@ function Dashboard() {
                       onChange={(e) => setPagination({ ...pagination, PageSize: e.target.value, Page: 1 })} optionsArray={paginationArray}></CustomFields>
                   </label>
                 </div>
-                {/* <div className="datatable-search">
-                  <CustomFields type="text" classField="form-control" placeholder="Name" value={formInput.name} onChange={(e) => { updateFormInput({ ...formInput, name: e.target.value }) }}></CustomFields>
-                </div> */}
               </div>
               <div className="datatable-container">
                 <table id="datatablesSimple" className="datatable-table">

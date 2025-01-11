@@ -36,7 +36,6 @@ function Users({ changeLoaderState }) {
                 ...prevFormInput,
                 roleId: updatedField, 
             }));
-            console.log(formInput);
         };
 
     const getUsers = async () => {
@@ -79,12 +78,9 @@ function Users({ changeLoaderState }) {
             Status:newStatus
         }
 
-        try{
-            await commonServices.HttpPost(UpdateUserStatusDTO,'/Admin/UpdateUserStatus');
-            setAlert({type: 'success', msg: "Company saved successfully!" });
-        }catch(error){
-            
-        }
+        await commonServices.HttpPost(UpdateUserStatusDTO,'/Admin/UpdateUserStatus');
+        setAlert({type: 'success', msg: "Company saved successfully!" });
+        
         closePopup();
         getUsers();
     }

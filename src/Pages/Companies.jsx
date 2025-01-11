@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { apiUrl, SuperAdminRoleId, AdminRoleId, EmployeeRoleId, ClientRoleId, paginationArray, getPagesTags, getEntriesOfPagination, getStartPointOfPagination } from "../GlobalFile";
+import { apiUrl , paginationArray, getPagesTags, getEntriesOfPagination, getStartPointOfPagination } from "../GlobalFile";
 import { useNavigate } from 'react-router-dom';
 import PopUps from "../Components/PopUps";
 import LoadingSpinner from "../Components/LoadingSpinner";
@@ -119,9 +119,6 @@ const Companies = () => {
                                                 value={pagination.PageSize} onChange={(e) => setPagination({ ...pagination, PageSize: e.target.value, Page: 1 })} optionsArray={paginationArray}></CustomFields>
                                         </label>
                                     </div>
-                                    {/* <div className="datatable-search">
-                                        <input type="text" id="datePickerInput" placeholder="Search" className="form-control text-center" />
-                                    </div> */}
                                 </div>
                                 <div className="datatable-container">
                                     <table id="datatablesSimple" className="datatable-table">

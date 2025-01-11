@@ -22,8 +22,6 @@ const ProjectTimeLogs = () => {
         id: null,
         hours: '',
         description: '',
-        //startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-        //endDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0),
         employeeName: ''
     });
     const token = sessionStorage.getItem('Token');
@@ -59,8 +57,6 @@ const ProjectTimeLogs = () => {
         var UserId = null;
         var firstDate = dateRange?.startDate;
         var lastDate = dateRange?.endDate;
-        console.log('first',firstDate);
-        console.log('first',lastDate);
         EmployeeId = AssigneeId;
         setProjectAssigneeId(AssigneeId);
         if (currentRoleId == AdminRoleId && AssigneeId == 'undefined') {
@@ -75,9 +71,6 @@ const ProjectTimeLogs = () => {
 
         if (EmployeeId == 'undefined')
             EmployeeId = null;
-
-        // if (formInput?.employeeName == '')
-        //     EmployeeId = null;
 
         var TimeLogsuserProjectDTo = {
             'DateFrom': firstDate,
@@ -152,29 +145,6 @@ const ProjectTimeLogs = () => {
             Hours: formInput.hours,
             Text: formInput.description
         }
-
-        // const url = new URL(apiUrl + '/ProjectTimeLogs/UpdateTimeLogbyId');
-        // fetch(url, {
-        //     method: 'POST',
-        //     headers: {
-        //         'Authorization': 'Bearer ' + token,
-        //         'Accept': 'application/json',
-        //         'Content-Type': 'application/json',
-        //     },
-        //     body: JSON.stringify(UpdateTimeLogsDTO)
-        // })
-        //     .then((response) => response.json())
-        //     .then((data) => {
-        //         setUpdateButton(false);
-        //         if (data.statusCode == 200) {
-        //             setAlert({ type: 'success', msg: "TimeLog Updated Successfully!" });
-        //         }
-        //         window.location.reload();
-        //         setIsLoading(true);
-        //     })
-        //     .catch((error) => {
-        //         setAlert({ type: 'danger', msg: "TimeLog Updating Failed!" });
-        //     });
 
             try{
                 var data = await commonServices.HttpPost(UpdateTimeLogsDTO,'/ProjectTimeLogs/UpdateTimeLogbyId');

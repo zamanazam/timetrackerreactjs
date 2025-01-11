@@ -154,9 +154,6 @@ export default function CreateAccount() {
                                         </div>
                                     </form>
                                 </div>
-                                {/* <div className="card-footer text-center py-3">
-                                    <div className="small"><Link to="/logIn">Have an account? Go to login</Link></div>
-                                </div> */}
                             </div>
                         </div>
                     </div>
